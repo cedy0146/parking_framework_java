@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <h2 class="mb-4"><i class="fas fa-user"></i> <span th:text="${id != null ? 'Modifier l’utilisateur' : 'Nouvel utilisateur'}"></span></h2>
+    <div class="card"><div class="card-body">
+        <form th:action="${id != null} ? @{/utilisateurs/modifier/{id}(id=${id})} : @{/utilisateurs/sauvegarder}" th:object="${utilisateur}" method="post" class="row g-3">
+            <div class="col-md-6"><label class="form-label">Nom *</label><input type="text" class="form-control" th:field="*{nom}" th:classappend="${#fields.hasErrors('nom')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('nom')}" th:errors="*{nom}"></div></div>
+            <div class="col-md-6"><label class="form-label">Prénom *</label><input type="text" class="form-control" th:field="*{prenom}" th:classappend="${#fields.hasErrors('prenom')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('prenom')}" th:errors="*{prenom}"></div></div>
+            <div class="col-md-6"><label class="form-label">Email *</label><input type="email" class="form-control" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div></div>
+            <div class="col-md-6"><label class="form-label">Téléphone</label><input type="text" class="form-control" th:field="*{telephone}"></div>
+            <div class="col-md-6"><label class="form-label">Mot de passe *</label><input type="password" class="form-control" th:field="*{motDePasse}" th:placeholder="${id != null ? 'Laisser vide pour ne pas changer' : ''}" th:classappend="${#fields.hasErrors('motDePasse')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('motDePasse')}" th:errors="*{motDePasse}"></div></div>
+            <div class="col-md-6"><label class="form-label">Rôle *</label><select class="form-select" th:field="*{role}" th:classappend="${#fields.hasErrors('role')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></div></div>
+            <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button> <a th:href="@{/utilisateurs}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
+        </form>
+    </div></div>
+</div>
+</body>
+</html>

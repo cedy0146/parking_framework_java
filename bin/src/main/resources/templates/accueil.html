@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <h2 class="mb-4"><i class="fas fa-home"></i> Tableau de bord</h2>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card libre">
+                <div class="card-body">
+                    <h5 class="card-title text-success">Places Libres</h5>
+                    <p class="display-6" th:text="${placesLibres != null ? placesLibres : 0}">0</p>
+                    <a th:href="@{/places?statut=LIBRE}" class="text-success">Voir <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card occupee">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">Places Occupées</h5>
+                    <p class="display-6" th:text="${placesOccupees != null ? placesOccupees : 0}">0</p>
+                    <a th:href="@{/places?statut=OCCUPEE}" class="text-danger">Voir <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card reservee">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">Réservations</h5>
+                    <p class="display-6" th:text="${reservationsActives != null ? reservationsActives : 0}">0</p>
+                    <a th:href="@{/reservations?statut=CONFIRMEE}" class="text-warning">Voir <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card hors-service">
+                <div class="card-body">
+                    <h5 class="card-title text-secondary">En Stationnement</h5>
+                    <p class="display-6" th:text="${enStationnement != null ? enStationnement : 0}">0</p>
+                    <a th:href="@{/entrees-sorties?enCours=true}" class="text-secondary">Voir <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header"><i class="fas fa-bolt"></i> Actions rapides</div>
+                <div class="card-body">
+                    <a th:href="@{/entrees-sorties/nouveau}" class="btn btn-success me-2 mb-2"><i class="fas fa-sign-in-alt"></i> Entrée</a>
+                    <a th:href="@{/reservations/nouveau}" class="btn btn-primary me-2 mb-2"><i class="fas fa-calendar-plus"></i> Réservation</a>
+                    <a th:href="@{/places/plan}" class="btn btn-info me-2 mb-2"><i class="fas fa-th"></i> Plan</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

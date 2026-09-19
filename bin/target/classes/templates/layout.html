@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle != null ? pageTitle + ' - Parking' : 'Parking Management'}">Parking</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar { min-height: 100vh; background-color: #2c3e50; }
+        .sidebar a { color: #ecf0f1; text-decoration: none; padding: 12px 20px; display: block; transition: background 0.3s; }
+        .sidebar a:hover, .sidebar a.active { background-color: #34495e; }
+        .sidebar .brand { padding: 20px; font-size: 1.3em; font-weight: bold; color: #3498db; border-bottom: 1px solid #34495e; }
+        .content { padding: 20px; }
+        .stat-card { border-left: 4px solid; border-radius: 8px; }
+        .stat-card.libre { border-color: #27ae60; }
+        .stat-card.occupee { border-color: #e74c3c; }
+        .stat-card.reservee { border-color: #f39c12; }
+        .stat-card.hors-service { border-color: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 d-none d-md-block sidebar">
+                <div class="brand"><i class="fas fa-parking"></i> Parking</div>
+
+                <!-- Accueil : tous les utilisateurs authentifiés -->
+                <a th:href="@{/accueil}"><i class="fas fa-home"></i> Accueil</a>
+
+                <!-- Plan Parking : ADMIN, MANAGER, OPERATOR -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places/plan}"><i class="fas fa-th"></i> Plan Parking</a>
+
+                <!-- Places (gestion) : ADMIN, MANAGER, OPERATOR -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places}"><i class="fas fa-map-marker-alt"></i> Places</a>
+
+                <!-- Réservations : ADMIN, MANAGER, USER -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}"><i class="fas fa-calendar-check"></i> Réservations</a>
+
+                <!-- Entrées/Sorties : ADMIN, MANAGER, OPERATOR -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties}"><i class="fas fa-exchange-alt"></i> Entrées/Sorties</a>
+
+                <!-- Abonnements (gestion) : ADMIN, MANAGER -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/abonnements}"><i class="fas fa-id-card"></i> Abonnements</a>
+
+                <!-- Mon abonnement : USER uniquement -->
+                <a sec:authorize="hasRole('USER')" th:href="@{/abonnements/mon-abonnement}"><i class="fas fa-id-card"></i> Mon abonnement</a>
+
+                <!-- Véhicules : ADMIN, MANAGER, OPERATOR -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/vehicules}"><i class="fas fa-car"></i> Véhicules</a>
+
+                <!-- Utilisateurs : ADMIN, MANAGER -->
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/utilisateurs}"><i class="fas fa-users"></i> Utilisateurs</a>
+
+                <hr style="border-color: #34495e;">
+
+                <!-- Déconnexion : tous -->
+                <a th:href="@{/logout}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+            </nav>
+            <main class="col-md-10 ms-sm-auto content">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:replace="~{:: pageContent}">Contenu</div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

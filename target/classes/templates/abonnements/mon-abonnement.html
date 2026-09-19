@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <h2 class="mb-4"><i class="fas fa-id-card"></i> Mon abonnement</h2>
+
+    <div th:if="${#lists.isEmpty(abonnements)}" class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Vous n'avez aucun abonnement en cours.
+    </div>
+
+    <div th:each="a : ${abonnements}" class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="card-title">
+                        <span class="badge" th:text="${a.type}"
+                              th:classappend="${a.type.name() == 'MENSUEL'} ? 'bg-primary' : (${a.type.name() == 'ANNUEL'} ? 'bg-success' : 'bg-info')"></span>
+                    </h5>
+                    <p><strong>Véhicule :</strong> <span th:text="${a.vehiculeImmatriculation}"></span></p>
+                    <p><strong>Début :</strong> <span th:text="${#temporals.format(a.dateDebut, 'dd/MM/yyyy')}"></span></p>
+                    <p><strong>Fin :</strong> <span th:text="${#temporals.format(a.dateFin, 'dd/MM/yyyy')}"></span></p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p><strong>Prix :</strong> <span th:text="${a.prix + ' Ar'}"></span></p>
+                    <span class="badge fs-6" th:text="${a.statut}"
+                          th:classappend="${a.statut.name() == 'ACTIF'} ? 'bg-success' : (${a.statut.name() == 'EXPIRE'} ? 'bg-secondary' : 'bg-danger')"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a th:href="@{/places/disponibles-consultation}" class="btn btn-info">
+            <i class="fas fa-th"></i> Voir les places disponibles
+        </a>
+    </div>
+</div>
+</body>
+</html>

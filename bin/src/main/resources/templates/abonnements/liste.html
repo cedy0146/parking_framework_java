@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-id-card"></i> Abonnements</h2>
+        <a th:href="@{/abonnements/nouveau}" class="btn btn-primary"><i class="fas fa-plus"></i> Nouvel abonnement</a>
+    </div>
+    <div class="card mb-4"><div class="card-body">
+        <form th:action="@{/abonnements}" method="get" class="row g-3">
+            <div class="col-md-3"><select class="form-select" name="statut"><option value="">Tous statuts</option><option th:each="s : ${statutsAbonnement}" th:value="${s}" th:text="${s}" th:selected="${s == statutFiltre}"></option></select></div>
+            <div class="col-md-3"><select class="form-select" name="type"><option value="">Tous types</option><option th:each="t : ${typesAbonnement}" th:value="${t}" th:text="${t}" th:selected="${t == typeFiltre}"></option></select></div>
+            <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-search"></i> Filtrer</button></div>
+        </form>
+    </div></div>
+    <div class="card"><div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead><tr><th>ID</th><th>Utilisateur</th><th>Véhicule</th><th>Type</th><th>Début</th><th>Fin</th><th>Prix</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                    <tr th:each="a : ${abonnements.content}">
+                        <td th:text="${a.id}"></td><td th:text="${a.utilisateurNom}"></td><td th:text="${a.vehiculeImmatriculation}"></td>
+                        <td th:text="${a.type}"></td><td th:text="${#temporals.format(a.dateDebut, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#temporals.format(a.dateFin, 'dd/MM/yyyy')}"></td><td th:text="${a.prix + ' Ar'}"></td>
+                        <td><span class="badge" th:text="${a.statut}" th:classappend="${a.statut.name() == 'ACTIF'} ? 'bg-success' : (${a.statut.name() == 'EXPIRE'} ? 'bg-secondary' : 'bg-danger')"></span></td>
+                        <td><a th:if="${a.statut.name() == 'ACTIF'}" th:href="@{/abonnements/resilier/{id}(id=${a.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Résilier ?')"><i class="fas fa-ban"></i></a></td>
+                    </tr>
+                    <tr th:if="${abonnements.content.isEmpty()}"><td colspan="9" class="text-center text-muted">Aucun abonnement</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <nav th:if="${totalPages > 1}"><ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'"><a class="page-link" th:href="@{/abonnements(page=${currentPage - 1})}">Précédent</a></li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'"><a class="page-link" th:href="@{/abonnements(page=${i})}" th:text="${i + 1}"></a></li>
+            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'"><a class="page-link" th:href="@{/abonnements(page=${currentPage + 1})}">Suivant</a></li>
+        </ul></nav>
+    </div></div>
+</div>
+</body>
+</html>

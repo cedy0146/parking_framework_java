@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <h2 class="mb-4"><i class="fas fa-calendar-plus"></i> Nouvelle réservation</h2>
+    <div class="card"><div class="card-body">
+        <form th:action="@{/reservations/sauvegarder}" th:object="${reservation}" method="post" class="row g-3">
+
+            <!-- Pour USER : pas de sélection utilisateur, c'est automatique -->
+            <div class="col-md-6" th:if="${!estUSER}">
+                <label class="form-label">Utilisateur *</label>
+                <select class="form-select" th:field="*{utilisateurId}" th:classappend="${#fields.hasErrors('utilisateurId')} ? 'is-invalid'">
+                    <option value="">-- Sélectionner --</option>
+                    <option th:each="u : ${utilisateurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom}"></option>
+                </select>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('utilisateurId')}" th:errors="*{utilisateurId}"></div>
+            </div>
+
+            <!-- Pour USER : champ caché avec l'ID de l'utilisateur connecté -->
+            <input type="hidden" th:if="${estUSER}" th:field="*{utilisateurId}" th:value="${utilisateurConnecteId}">
+
+            <div class="col-md-6">
+                <label class="form-label">Véhicule *</label>
+                <select class="form-select" th:field="*{vehiculeId}" th:classappend="${#fields.hasErrors('vehiculeId')} ? 'is-invalid'">
+                    <option value="">-- Sélectionner --</option>
+                    <option th:each="v : ${vehicules}" th:value="${v.id}" th:text="${v.immatriculation + ' - ' + v.marque}"></option>
+                </select>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('vehiculeId')}" th:errors="*{vehiculeId}"></div>
+            </div>
+
+            <div class="col-md-6"><label class="form-label">Arrivée prévue *</label><input type="datetime-local" class="form-control" th:field="*{dateHeureArriveePrevue}" th:classappend="${#fields.hasErrors('dateHeureArriveePrevue')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('dateHeureArriveePrevue')}" th:errors="*{dateHeureArriveePrevue}"></div></div>
+            <div class="col-md-6"><label class="form-label">Départ prévu *</label><input type="datetime-local" class="form-control" th:field="*{dateHeureDepartPrevue}" th:classappend="${#fields.hasErrors('dateHeureDepartPrevue')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('dateHeureDepartPrevue')}" th:errors="*{dateHeureDepartPrevue}"></div></div>
+
+            <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Créer</button> <a th:href="@{/reservations}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
+        </form>
+    </div></div>
+</div>
+</body>
+</html>

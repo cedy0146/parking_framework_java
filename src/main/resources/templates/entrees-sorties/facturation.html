@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <h2 class="mb-4"><i class="fas fa-receipt"></i> Facturation</h2>
+    <div class="card" th:if="${tarification}">
+        <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Détail facturation</h5></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table">
+                        <tr><th>Véhicule :</th><td th:text="${tarification.vehiculeImmatriculation}"></td></tr>
+                        <tr><th>Place :</th><td th:text="${tarification.placeNumero}"></td></tr>
+                        <tr><th>Durée :</th><td th:text="${tarification.dureeFormatee}"></td></tr>
+                        <tr><th>Tarif horaire :</th><td th:text="${tarification.tarifHoraire + ' Ar'}"></td></tr>
+                        <tr><th>Abonné :</th><td><span class="badge" th:text="${tarification.aAbonnement ? 'Oui (-20%)' : 'Non'}" th:classappend="${tarification.aAbonnement} ? 'bg-success' : 'bg-secondary'"></span></td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-light"><div class="card-body text-center">
+                        <p th:text="${tarification.detailsCalcul}" class="text-muted"></p><hr>
+                        <h3 class="text-primary"><i class="fas fa-money-bill-wave"></i> <span th:text="${tarification.montantTotal + ' Ar'}"></span></h3>
+                        <strong>Montant à payer</strong>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer"><a th:href="@{/entrees-sorties}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Retour</a></div>
+    </div>
+</div>
+</body>
+</html>

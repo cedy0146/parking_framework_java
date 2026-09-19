@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
+<body>
+<div th:fragment="pageContent">
+    <h2 class="mb-4"><i class="fas fa-sign-in-alt"></i> Enregistrer une entrée</h2>
+    <div class="card"><div class="card-body">
+        <form th:action="@{/entrees-sorties/enregistrer-entree}" th:object="${entreeSortie}" method="post" class="row g-3">
+            <div class="col-md-6"><label class="form-label">Véhicule *</label><select class="form-select" th:field="*{vehiculeId}" th:classappend="${#fields.hasErrors('vehiculeId')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="v : ${vehicules}" th:value="${v.id}" th:text="${v.immatriculation + ' - ' + v.marque}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('vehiculeId')}" th:errors="*{vehiculeId}"></div></div>
+            <div class="col-md-6"><label class="form-label">Date/heure entrée *</label><input type="datetime-local" class="form-control" th:field="*{dateHeureEntree}" th:classappend="${#fields.hasErrors('dateHeureEntree')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('dateHeureEntree')}" th:errors="*{dateHeureEntree}"></div></div>
+            <div class="col-12"><div class="alert alert-info"><i class="fas fa-info-circle"></i> Place attribuée automatiquement selon le type d'utilisateur.</div></div>
+            <div class="col-12"><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button> <a th:href="@{/entrees-sorties}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
+        </form>
+    </div></div>
+</div>
+</body>
+</html>
