@@ -6,11 +6,14 @@ import com.tpe.parking.enumeration.StatutPlace;
 import com.tpe.parking.enumeration.TypePlace;
 import com.tpe.parking.security.SecurityUtils;
 import com.tpe.parking.service.PlaceService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -60,31 +63,52 @@ public class PlaceWebController {
     }
 
     @GetMapping("/nouveau")
-    public String formulaireAjout(Model model) {
+    public String formulaireAjout(Model model, HttpServletRequest request) {
         model.addAttribute("place", new PlaceRequestDTO());
         model.addAttribute("typesPlace", TypePlace.values());
-        return "places/formulaire";
+        // AJAX : seul le fragment du formulaire est renvoyé (affiché en modale).
+        return CrudAjax.estAjax(request) ? "places/formulaire :: formContent" : "places/formulaire";
     }
 
     @PostMapping("/sauvegarder")
-    public String sauvegarder(
+    public Object sauvegarder(
             @Valid @ModelAttribute("place") PlaceRequestDTO dto,
             BindingResult result,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        boolean ajax = CrudAjax.estAjax(request);
 
         if (result.hasErrors()) {
             model.addAttribute("typesPlace", TypePlace.values());
+            if (ajax) {
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+                return "places/formulaire :: formContent";
+            }
             return "places/formulaire";
         }
 
-        service.ajouter(dto);
+        try {
+            service.ajouter(dto);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/places";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Place ajoutée avec succès");
+        }
         redirectAttributes.addFlashAttribute("success", "Place ajoutée avec succès");
         return "redirect:/places";
     }
 
     @GetMapping("/modifier/{id}")
-    public String formulaireModification(@PathVariable Long id, Model model) {
+    public String formulaireModification(@PathVariable Long id, Model model, HttpServletRequest request) {
         PlaceResponseDTO place = service.recupererParId(id);
         PlaceRequestDTO dto = new PlaceRequestDTO();
         dto.setNumero(place.getNumero());
@@ -96,32 +120,66 @@ public class PlaceWebController {
         model.addAttribute("id", id);
         model.addAttribute("typesPlace", TypePlace.values());
         model.addAttribute("statutsPlace", StatutPlace.values());
-        return "places/formulaire";
+        return CrudAjax.estAjax(request) ? "places/formulaire :: formContent" : "places/formulaire";
     }
 
     @PostMapping("/modifier/{id}")
-    public String modifier(
+    public Object modifier(
             @PathVariable Long id,
             @Valid @ModelAttribute("place") PlaceRequestDTO dto,
             BindingResult result,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        boolean ajax = CrudAjax.estAjax(request);
 
         if (result.hasErrors()) {
             model.addAttribute("id", id);
             model.addAttribute("typesPlace", TypePlace.values());
             model.addAttribute("statutsPlace", StatutPlace.values());
+            if (ajax) {
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+                return "places/formulaire :: formContent";
+            }
             return "places/formulaire";
         }
 
-        service.modifier(id, dto);
+        try {
+            service.modifier(id, dto);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/places";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Place modifiée avec succès");
+        }
         redirectAttributes.addFlashAttribute("success", "Place modifiée avec succès");
         return "redirect:/places";
     }
 
-    @GetMapping("/supprimer/{id}")
-    public String supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        service.supprimer(id);
+    @PostMapping("/supprimer/{id}")
+    public Object supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes,
+                            HttpServletRequest request) {
+        boolean ajax = CrudAjax.estAjax(request);
+        try {
+            service.supprimer(id);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/places";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Place supprimée avec succès");
+        }
         redirectAttributes.addFlashAttribute("success", "Place supprimée avec succès");
         return "redirect:/places";
     }

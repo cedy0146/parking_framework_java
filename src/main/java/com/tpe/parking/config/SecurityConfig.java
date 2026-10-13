@@ -28,11 +28,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())
+            // CSRF obligatoire sur tous les POST du web MVC ; l'API REST et la
+            // console H2 (appels sans jeton) restent hors périmètre.
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**", "/h2-console/**"))
             .authorizeHttpRequests(auth -> auth
 
                 // === Ressources statiques et pages publiques ===
-                .requestMatchers("/", "/accueil", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+                .requestMatchers("/", "/accueil", "/accueil/stats", "/css/**", "/js/**", "/images/**", "/img/**", "/webjars/**").permitAll()
                 .requestMatchers("/login").permitAll()
                 .requestMatchers("/403").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
@@ -106,6 +109,11 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
+            )
+            .rememberMe(remember -> remember
+                .key("parkflow-remember-me")
+                .rememberMeParameter("_remember-me")
+                .tokenValiditySeconds(14 * 24 * 3600)
             )
             .exceptionHandling(ex -> ex
                 .accessDeniedPage("/403")

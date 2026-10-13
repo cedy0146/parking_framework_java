@@ -9,18 +9,20 @@ import com.tpe.parking.security.SecurityUtils;
 import com.tpe.parking.service.AbonnementService;
 import com.tpe.parking.service.UtilisateurService;
 import com.tpe.parking.service.VehiculeService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -68,53 +70,91 @@ public class AbonnementWebController {
     }
 
     @GetMapping("/nouveau")
-    public String formulaireAjout(Model model) {
+    public String formulaireAjout(Model model, HttpServletRequest request) {
         model.addAttribute("abonnement", new AbonnementRequestDTO());
         model.addAttribute("utilisateurs", utilisateurService.trouverTous(null, null, PageRequest.of(0, 100)).getContent());
         model.addAttribute("vehicules", vehiculeService.trouverTous(null, null, null, PageRequest.of(0, 100)).getContent());
         model.addAttribute("typesAbonnement", TypeAbonnement.values());
-        return "abonnements/formulaire";
+        return CrudAjax.estAjax(request) ? "abonnements/formulaire :: formContent" : "abonnements/formulaire";
     }
 
     @PostMapping("/sauvegarder")
-    public String sauvegarder(
+    public Object sauvegarder(
             @Valid @ModelAttribute("abonnement") AbonnementRequestDTO dto,
             BindingResult result,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        boolean ajax = CrudAjax.estAjax(request);
 
         if (result.hasErrors()) {
             model.addAttribute("utilisateurs", utilisateurService.trouverTous(null, null, PageRequest.of(0, 100)).getContent());
             model.addAttribute("vehicules", vehiculeService.trouverTous(null, null, null, PageRequest.of(0, 100)).getContent());
             model.addAttribute("typesAbonnement", TypeAbonnement.values());
+            if (ajax) {
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+                return "abonnements/formulaire :: formContent";
+            }
             return "abonnements/formulaire";
         }
 
         try {
             service.ajouter(dto);
-            redirectAttributes.addFlashAttribute("success", "Abonnement créé avec succès");
         } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/abonnements/nouveau";
         }
 
+        if (ajax) {
+            return CrudAjax.succes("Abonnement créé avec succès");
+        }
+        redirectAttributes.addFlashAttribute("success", "Abonnement créé avec succès");
         return "redirect:/abonnements";
     }
 
-    @GetMapping("/resilier/{id}")
-    public String resilier(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    @PostMapping("/resilier/{id}")
+    public Object resilier(@PathVariable Long id, RedirectAttributes redirectAttributes,
+                           HttpServletRequest request) {
+        boolean ajax = CrudAjax.estAjax(request);
         try {
             service.resilier(id);
-            redirectAttributes.addFlashAttribute("success", "Abonnement résilié");
         } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/abonnements";
         }
+
+        if (ajax) {
+            return CrudAjax.succes("Abonnement résilié");
+        }
+        redirectAttributes.addFlashAttribute("success", "Abonnement résilié");
         return "redirect:/abonnements";
     }
 
-    @GetMapping("/supprimer/{id}")
-    public String supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        service.supprimer(id);
+    @PostMapping("/supprimer/{id}")
+    public Object supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes,
+                            HttpServletRequest request) {
+        boolean ajax = CrudAjax.estAjax(request);
+        try {
+            service.supprimer(id);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/abonnements";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Abonnement supprimé");
+        }
         redirectAttributes.addFlashAttribute("success", "Abonnement supprimé");
         return "redirect:/abonnements";
     }

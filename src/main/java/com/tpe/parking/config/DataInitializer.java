@@ -4,6 +4,7 @@ import com.tpe.parking.entity.*;
 import com.tpe.parking.enumeration.*;
 import com.tpe.parking.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Order(0)
 @Component
 public class DataInitializer implements CommandLineRunner {
 

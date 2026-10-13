@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234d8dff'/%3E%3Cpath d='M11 24V8h6a5 5 0 0 1 0 10h-6' fill='none' stroke='%2304122e' stroke-width='2.5'/%3E%3C/svg%3E">
+    <title>ParkFlow — Gestion de parking</title>
+    <!-- Thème appliqué AVANT le rendu : le mode sombre est la valeur par défaut -->
+    <script>
+        (function () {
+            var theme = 'dark';
+            try {
+                theme = localStorage.getItem('parkflow-theme') || 'dark';
+            } catch (e) { /* stockage indisponible : mode sombre */ }
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+    <meta name="theme-color" content="#070d1c">
+    <meta name="description" content="ParkFlow : places, réservations, entrées et sorties, abonnements — la gestion de votre parking réunie dans un seul espace.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link th:href="@{/css/theme.css?v=3}" href="/css/theme.css?v=3" rel="stylesheet">
+    <!-- Jeton CSRF résolu dès le rendu : la session (et son cookie) doit être
+         créée avant que Tomcat ne vide son buffer (formulaire de connexion en modale). -->
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script defer th:src="@{/js/animations.js}" src="/js/animations.js"></script>
+    <script defer th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+    <script defer th:src="@{/js/login-modal.js}" src="/js/login-modal.js"></script>
+</head>
+<body class="landing-body">
+<a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+<header class="app-header">
+    <div class="app-header-inner">
+        <a class="app-brand" th:href="@{/}">
+            <span class="app-brand-mark d-inline-flex align-items-center justify-content-center" aria-hidden="true"><i class="bi bi-p-circle-fill"></i></span>
+            <span>ParkFlow</span>
+        </a>
+        <div class="app-header-tools">
+            <button type="button" class="theme-toggle" data-theme-toggle
+                    aria-label="Changer de thème" title="Mode clair" aria-pressed="true">
+                <i class="bi bi-moon-stars-fill" data-theme-icon="light" aria-hidden="true"></i>
+                <i class="bi bi-sun-fill" data-theme-icon="dark" aria-hidden="true" hidden></i>
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" data-login-open>
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Se connecter
+            </button>
+        </div>
+    </div>
+</header>
+
+<main id="main-content" data-anim="hero">
+    <!-- Héros : 2 colonnes -->
+    <section class="hero">
+        <div class="hero-copy">
+            <p class="hero-eyebrow" data-hero-item>Gestion de parking</p>
+            <h1 class="hero-title" data-hero-item>
+                Votre parking,<br>
+                sous contrôle, du
+                <em class="hl">stationnement.<svg class="hl-mark" viewBox="0 0 260 70" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="130" cy="35" rx="124" ry="30"></ellipse></svg></em>
+            </h1>
+            <p class="hero-text" data-hero-item>
+                Places, réservations, entrées et sorties, abonnements : ParkFlow réunit
+                la gestion quotidienne de votre parking dans une interface unique,
+                claire et rapide.
+            </p>
+            <div class="hero-actions" data-hero-item>
+                <button type="button" class="btn btn-primary btn-lg" data-login-open>
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Ouvrir le tableau de bord
+                </button>
+                <a href="#fonctionnalites" class="btn btn-outline-secondary btn-lg">
+                    Découvrir les fonctionnalités<i class="bi bi-arrow-down" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Illustration : voiture + smartphone, flottement lent -->
+        <div class="hero-visual float-slow" data-hero-item aria-hidden="true">
+            <svg viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+                <title>Illustration : plan de parking et suivi depuis un smartphone</title>
+                <!-- Panneau du plan -->
+                <rect x="24" y="48" width="330" height="270" rx="22" fill="var(--parking-surface)" stroke="var(--parking-border)" stroke-width="2"></rect>
+                <rect x="44" y="72" width="120" height="12" rx="6" fill="var(--parking-border-strong)"></rect>
+                <rect x="44" y="96" width="72" height="8" rx="4" fill="var(--parking-border)"></rect>
+                <!-- Places : rangées -->
+                <g>
+                    <rect x="44" y="128" width="78" height="52" rx="10" fill="var(--parking-success-soft)" stroke="var(--parking-success-border)"></rect>
+                    <rect x="132" y="128" width="78" height="52" rx="10" fill="var(--parking-danger-soft)" stroke="var(--parking-danger-border)"></rect>
+                    <rect x="220" y="128" width="78" height="52" rx="10" fill="var(--parking-success-soft)" stroke="var(--parking-success-border)"></rect>
+                    <rect x="44" y="192" width="78" height="52" rx="10" fill="var(--parking-danger-soft)" stroke="var(--parking-danger-border)"></rect>
+                    <rect x="132" y="192" width="78" height="52" rx="10" fill="var(--parking-success-soft)" stroke="var(--parking-success-border)"></rect>
+                    <rect x="220" y="192" width="78" height="52" rx="10" fill="var(--parking-warning-soft)" stroke="var(--parking-warning-border)"></rect>
+                    <rect x="44" y="256" width="78" height="40" rx="10" fill="var(--parking-surface-2)" stroke="var(--parking-border)"></rect>
+                    <rect x="132" y="256" width="78" height="40" rx="10" fill="var(--parking-success-soft)" stroke="var(--parking-success-border)"></rect>
+                    <rect x="220" y="256" width="78" height="40" rx="10" fill="var(--parking-danger-soft)" stroke="var(--parking-danger-border)"></rect>
+                </g>
+                <!-- Voiture -->
+                <g transform="translate(300 236)">
+                    <path d="M14 46h116c6 0 10 4 10 10v18c0 4-3 8-8 8h-8a18 18 0 0 1-36 0H54a18 18 0 0 1-36 0h-6c-5 0-8-4-8-8V56c0-6 4-10 10-10Z" fill="var(--parking-accent)"></path>
+                    <path d="M30 46l14-22c2-3 5-5 9-5h40c4 0 7 2 9 5l14 22H30Z" fill="var(--parking-accent-hover)"></path>
+                    <path d="M52 24h34l8 14H44l8-14Z" fill="var(--parking-bg)" opacity="0.35"></path>
+                    <circle cx="32" cy="82" r="10" fill="var(--parking-bg)"></circle>
+                    <circle cx="32" cy="82" r="4.5" fill="var(--parking-border-strong)"></circle>
+                    <circle cx="110" cy="82" r="10" fill="var(--parking-bg)"></circle>
+                    <circle cx="110" cy="82" r="4.5" fill="var(--parking-border-strong)"></circle>
+                </g>
+                <!-- Smartphone -->
+                <g transform="translate(372 40)">
+                    <rect x="0" y="0" width="128" height="228" rx="22" fill="var(--parking-surface)" stroke="var(--parking-border-strong)" stroke-width="2"></rect>
+                    <rect x="12" y="26" width="104" height="176" rx="12" fill="var(--parking-bg)"></rect>
+                    <rect x="48" y="10" width="32" height="6" rx="3" fill="var(--parking-border-strong)"></rect>
+                    <!-- écran : statut -->
+                    <circle cx="64" cy="78" r="24" fill="var(--parking-accent-soft)" stroke="var(--parking-accent)" stroke-width="2"></circle>
+                    <path d="M52 78l8 8 16-16" stroke="var(--parking-accent)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <rect x="30" y="120" width="68" height="9" rx="4.5" fill="var(--parking-border-strong)"></rect>
+                    <rect x="42" y="138" width="44" height="7" rx="3.5" fill="var(--parking-border)"></rect>
+                    <rect x="26" y="164" width="76" height="22" rx="11" fill="var(--parking-accent)"></rect>
+                </g>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Les 6 modules -->
+    <section class="module-grid pb-5" aria-label="Modules de ParkFlow">
+        <article class="module-card" data-hero-item>
+            <span class="module-card-icon" aria-hidden="true"><i class="bi bi-pin-map-fill"></i></span>
+            <h2 class="module-card-title">Places</h2>
+            <p class="module-card-desc">Zones, types et statuts de chaque place, en un coup d'œil.</p>
+        </article>
+        <article class="module-card" data-hero-item>
+            <span class="module-card-icon" aria-hidden="true"><i class="bi bi-car-front-fill"></i></span>
+            <h2 class="module-card-title">Véhicules</h2>
+            <p class="module-card-desc">Immatriculations et profils des véhicules suivis.</p>
+        </article>
+        <article class="module-card" data-hero-item>
+            <span class="module-card-icon" aria-hidden="true"><i class="bi bi-calendar-check-fill"></i></span>
+            <h2 class="module-card-title">Réservations</h2>
+            <p class="module-card-desc">Création, confirmation et suivi des réservations.</p>
+        </article>
+        <article class="module-card" data-hero-item>
+            <span class="module-card-icon" aria-hidden="true"><i class="bi bi-arrow-left-right"></i></span>
+            <h2 class="module-card-title">Entrées / sorties</h2>
+            <p class="module-card-desc">Mouvements enregistrés et facturation calculée automatiquement.</p>
+        </article>
+        <article class="module-card" data-hero-item>
+            <span class="module-card-icon" aria-hidden="true"><i class="bi bi-credit-card-2-front-fill"></i></span>
+            <h2 class="module-card-title">Abonnements</h2>
+            <p class="module-card-desc">Formules mensuelles, trimestrielles ou annuelles par client.</p>
+        </article>
+        <article class="module-card" data-hero-item>
+            <span class="module-card-icon" aria-hidden="true"><i class="bi bi-people-fill"></i></span>
+            <h2 class="module-card-title">Utilisateurs</h2>
+            <p class="module-card-desc">Comptes, rôles et accès de chaque membre de l'équipe.</p>
+        </article>
+    </section>
+</main>
+
+<!-- Bande de fonctionnalités -->
+<section class="feature-band" id="fonctionnalites" aria-labelledby="fonctionnalites-title">
+    <div class="feature-band-inner">
+        <div class="feature-band-head reveal">
+            <p class="page-eyebrow">Fonctionnalités</p>
+            <h2 class="feature-band-title" id="fonctionnalites-title">Tout ce qu'il faut pour faire tourner un parking.</h2>
+            <p class="feature-band-sub">Du premier stationnement à la facturation, chaque étape est couverte.</p>
+        </div>
+        <div class="feature-grid">
+            <article class="feature-item reveal">
+                <span class="feature-item-icon" aria-hidden="true"><i class="bi bi-activity"></i></span>
+                <h3 class="feature-item-title">Suivi en direct</h3>
+                <p class="feature-item-text">Places libres, places occupées et véhicules en stationnement mis à jour à chaque mouvement, avec un plan du parking interactif.</p>
+            </article>
+            <article class="feature-item reveal">
+                <span class="feature-item-icon" aria-hidden="true"><i class="bi bi-calendar-check"></i></span>
+                <h3 class="feature-item-title">Réservations &amp; abonnements</h3>
+                <p class="feature-item-text">Vos clients réservent leur place et gèrent leurs abonnements depuis le même espace, avec un historique clair.</p>
+            </article>
+            <article class="feature-item reveal">
+                <span class="feature-item-icon" aria-hidden="true"><i class="bi bi-lightning-charge"></i></span>
+                <h3 class="feature-item-title">Opérations simplifiées</h3>
+                <p class="feature-item-text">Entrées, sorties et facturation en quelques clics, sans quitter la page — les formulaires s'ouvrent en fenêtre modale.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<footer class="landing-footer">
+    <div class="landing-footer-inner">
+        <a class="landing-footer-brand" th:href="@{/}">
+            <span class="app-brand-mark d-inline-flex align-items-center justify-content-center" aria-hidden="true"><i class="bi bi-p-circle-fill"></i></span>
+            ParkFlow
+        </a>
+        <p class="landing-footer-note mb-0">Gestion de parking — places, réservations et accès.</p>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-login-open>
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Se connecter
+        </button>
+    </div>
+</footer>
+
+<!-- Modale de connexion (ouverte par data-login-open et les paramètres ?login…) -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="login-modal-grid">
+                <!-- Colonne visuelle -->
+                <aside class="login-modal-visual" aria-hidden="true">
+                    <img th:src="@{/img/p1.avif}" src="/img/p1.avif" alt="" width="740" height="249">
+                    <p class="login-modal-slogan">Votre parking,<br><em>sous contrôle.</em></p>
+                </aside>
+                <!-- Colonne formulaire -->
+                <div class="login-modal-pane">
+                    <button type="button" class="btn-close login-modal-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    <p class="login-modal-eyebrow">Accès réservé</p>
+                    <h2 class="login-modal-title" id="loginModalLabel">Connexion</h2>
+                    <p class="login-modal-sub">Accédez à votre espace de gestion.</p>
+
+                    <div id="loginModalAlert" class="alert alert-danger login-modal-alert" role="alert" hidden></div>
+
+                    <form id="loginModalForm" th:action="@{/login}" method="post" class="login-modal-form" novalidate>
+                        <div class="mb-3">
+                            <label for="login-username" class="form-label">Adresse e-mail</label>
+                            <input type="email" class="form-control" id="login-username" name="username"
+                                   placeholder="nom@exemple.com" autocomplete="username" required autofocus>
+                        </div>
+                        <div class="mb-3">
+                            <label for="login-password" class="form-label">Mot de passe</label>
+                            <div class="login-pw-wrap">
+                                <input type="password" class="form-control" id="login-password" name="password"
+                                       placeholder="Votre mot de passe" autocomplete="current-password" required>
+                                <button type="button" class="login-pw-toggle" id="loginPwToggle"
+                                        aria-label="Afficher le mot de passe" title="Afficher le mot de passe">
+                                    <i class="bi bi-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="login-remember" name="_remember-me" value="true">
+                                <label class="form-check-label" for="login-remember">Se souvenir de moi</label>
+                            </div>
+                            <a href="mailto:admin@parking.com?subject=Mot%20de%20passe%20oubli%C3%A9%20%E2%80%94%20ParkFlow"
+                               class="small">Mot de passe oublié ?</a>
+                        </div>
+                        <button type="submit" class="btn btn-primary login-modal-submit" id="loginModalSubmit">
+                            <span class="login-modal-spinner spinner-border spinner-border-sm me-2" hidden aria-hidden="true"></span>
+                            <span class="login-modal-submit-label">Se connecter</span>
+                        </button>
+                    </form>
+
+                    <p class="login-modal-sub mt-4 mb-0">Pas encore de compte ?
+                        <a href="mailto:admin@parking.com?subject=Demande%20d%27acc%C3%A8s%20ParkFlow">Contactez l'administrateur</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

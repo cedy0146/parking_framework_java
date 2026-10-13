@@ -1,17 +1,354 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" data-bs-theme="light">
+<html xmlns:th="http://www.thymeleaf.org" lang="fr" data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light dark"><title>Connexion · ParkFlow</title>
-    <script>!function(){try{var t=localStorage.getItem('parking-theme')||'auto';document.documentElement.setAttribute('data-bs-theme',t==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t)}catch(e){}}()</script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"><link th:href="@{/css/theme.css}" href="/css/theme.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Thème appliqué AVANT le rendu : le mode sombre est la valeur par défaut -->
+    <script>
+        (function () {
+            var theme = 'dark';
+            try {
+                theme = localStorage.getItem('parkflow-theme') || 'dark';
+            } catch (e) { /* stockage indisponible : mode sombre */ }
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+    <meta name="theme-color" content="#070d1c">
+    <!-- Jeton CSRF résolu dès le début du rendu : la session (et son cookie)
+         doit être créée avant que Tomcat ne vide son buffer de réponse. -->
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234d8dff'/%3E%3Cpath d='M11 24V8h6a5 5 0 0 1 0 10h-6' fill='none' stroke='%2304122e' stroke-width='2.5'/%3E%3C/svg%3E">
+    <title>Connexion - ParkFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        /* Jetons de couleurs ParkFlow : chaque valeur vit dans une variable CSS
+           qui bascule avec data-bs-theme, d'où des classes Tailwind uniques
+           (bg-park-surface, text-park-text…) valables dans les deux thèmes. */
+        tailwind.config = {
+            darkMode: ['selector', '[data-bs-theme="dark"]'],
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif']
+                    },
+                    colors: {
+                        night: {
+                            DEFAULT: 'rgb(var(--login-text) / <alpha-value>)',
+                            800: '#04122e',
+                            muted: 'rgb(var(--login-muted) / <alpha-value>)'
+                        },
+                        ink: {
+                            DEFAULT: 'rgb(var(--login-accent) / <alpha-value>)',
+                            800: 'rgb(var(--login-accent-hover) / <alpha-value>)'
+                        },
+                        park: {
+                            bg: 'rgb(var(--login-bg) / <alpha-value>)',
+                            surface: 'rgb(var(--login-surface) / <alpha-value>)',
+                            'surface-2': 'rgb(var(--login-surface-2) / <alpha-value>)',
+                            text: 'rgb(var(--login-text) / <alpha-value>)',
+                            muted: 'rgb(var(--login-muted) / <alpha-value>)',
+                            line: 'rgb(var(--login-line) / <alpha-value>)',
+                            'line-strong': 'rgb(var(--login-line-strong) / <alpha-value>)',
+                            accent: 'rgb(var(--login-accent) / <alpha-value>)',
+                            'accent-hover': 'rgb(var(--login-accent-hover) / <alpha-value>)',
+                            'accent-soft': 'rgb(var(--login-accent-soft) / <alpha-value>)',
+                            'on-accent': 'rgb(var(--login-on-accent) / <alpha-value>)',
+                            success: 'rgb(var(--login-success) / <alpha-value>)',
+                            'success-soft': 'rgb(var(--login-success-soft) / <alpha-value>)',
+                            danger: 'rgb(var(--login-danger) / <alpha-value>)',
+                            'danger-soft': 'rgb(var(--login-danger-soft) / <alpha-value>)'
+                        }
+                    },
+                    boxShadow: {
+                        soft: 'var(--login-shadow-soft)',
+                        card: 'var(--login-shadow-card)',
+                        chip: 'var(--login-shadow-chip)'
+                    }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* Jetons du thème de connexion (mêmes valeurs que theme.css) */
+        :root {
+            color-scheme: light;
+            --login-bg: 244 247 255;
+            --login-surface: 255 255 255;
+            --login-surface-2: 238 243 255;
+            --login-text: 11 27 58;
+            --login-muted: 75 93 126;
+            --login-line: 211 221 245;
+            --login-line-strong: 176 193 232;
+            --login-accent: 37 99 235;
+            --login-accent-hover: 29 78 216;
+            --login-accent-soft: 230 238 255;
+            --login-on-accent: 255 255 255;
+            --login-success: 21 128 61;
+            --login-success-soft: 226 244 232;
+            --login-danger: 185 28 28;
+            --login-danger-soft: 253 234 234;
+            --login-shadow-soft: 0 24px 60px -28px rgba(11, 27, 58, 0.28);
+            --login-shadow-card: 0 24px 50px -28px rgba(37, 99, 235, 0.38);
+            --login-shadow-chip: 0 16px 36px -18px rgba(11, 27, 58, 0.3);
+        }
+
+        [data-bs-theme="dark"] {
+            color-scheme: dark;
+            --login-bg: 7 13 28;
+            --login-surface: 13 22 48;
+            --login-surface-2: 18 29 61;
+            --login-text: 238 243 255;
+            --login-muted: 147 163 196;
+            --login-line: 33 47 86;
+            --login-line-strong: 51 70 124;
+            --login-accent: 77 141 255;
+            --login-accent-hover: 117 166 255;
+            --login-accent-soft: 24 41 79;
+            --login-on-accent: 4 18 46;
+            --login-success: 74 222 128;
+            --login-success-soft: 22 47 37;
+            --login-danger: 248 113 113;
+            --login-danger-soft: 47 26 30;
+            --login-shadow-soft: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+            --login-shadow-card: 0 24px 50px -28px rgba(77, 141, 255, 0.3);
+            --login-shadow-chip: 0 16px 36px -18px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Halo décoratif derrière le formulaire */
+        .login-glow {
+            background:
+                radial-gradient(55rem 38rem at -8% -12%, rgb(var(--login-accent) / 0.1), transparent 60%),
+                radial-gradient(48rem 34rem at 112% 112%, rgb(var(--login-accent) / 0.08), transparent 60%);
+        }
+
+        /* Colonne visuelle : dégradé bleu accordé à l'identité */
+        .login-visual {
+            background: linear-gradient(
+                155deg,
+                rgb(var(--login-accent-soft)) 0%,
+                rgb(var(--login-bg)) 52%,
+                rgb(var(--login-surface-2)) 100%
+            );
+        }
+
+        /* Voile bleu par-dessus la photo, pour l'harmoniser */
+        .login-shot { position: relative; }
+        .login-shot::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: linear-gradient(
+                160deg,
+                rgb(var(--login-accent) / 0.3),
+                transparent 62%
+            );
+        }
+
+        .login-theme-toggle {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            z-index: 40;
+            width: 2.75rem;
+            height: 2.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.875rem;
+            border: 1px solid rgb(var(--login-line));
+            background: rgb(var(--login-surface) / 0.9);
+            backdrop-filter: blur(8px);
+            color: rgb(var(--login-text));
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+        .login-theme-toggle:hover {
+            border-color: rgb(var(--login-line-strong));
+            color: rgb(var(--login-accent));
+        }
+        .login-theme-toggle i,
+        .login-theme-toggle svg {
+            display: inline-block;
+            transition: transform 250ms ease, opacity 250ms ease;
+        }
+        .login-theme-toggle.is-switching i,
+        .login-theme-toggle.is-switching svg {
+            transform: rotate(180deg);
+            opacity: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition-duration: 0.001ms !important;
+            }
+        }
+    </style>
+    <script defer th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+    <script defer th:src="@{/js/animations.js}" src="/js/animations.js"></script>
 </head>
-<body class="auth-page d-flex align-items-center min-vh-100 py-4">
-    <main class="container"><div class="auth-card card mx-auto"><div class="card-body p-4 p-sm-5"><header class="text-center mb-4"><span class="auth-brand-mark rounded-4 d-inline-flex align-items-center justify-content-center fs-2 mb-3"><i class="bi bi-p-circle-fill" aria-hidden="true"></i></span><p class="text-primary fw-semibold small text-uppercase mb-1">ParkFlow</p><h1 class="h3 mb-2">Bon retour parmi nous</h1><p class="text-body-secondary mb-0">Connectez-vous pour gérer votre parking.</p></header>
-        <div th:if="${param.error}" class="alert alert-danger d-flex gap-2 align-items-start" role="alert"><i class="bi bi-exclamation-octagon-fill mt-1" aria-hidden="true"></i><span><strong>Connexion impossible.</strong><br>Email ou mot de passe incorrect.</span></div>
-        <div th:if="${param.logout}" class="alert alert-info d-flex gap-2 align-items-center" role="status"><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Vous avez été déconnecté avec succès.</div>
-        <form th:action="@{/login}" method="post"><div class="mb-3"><label for="username" class="form-label fw-medium">Adresse e-mail</label><div class="input-group"><span class="input-group-text"><i class="bi bi-envelope" aria-hidden="true"></i></span><input type="email" class="form-control" id="username" name="username" placeholder="nom@exemple.com" autocomplete="username" required autofocus></div></div><div class="mb-4"><label for="password" class="form-label fw-medium">Mot de passe</label><div class="input-group"><span class="input-group-text"><i class="bi bi-lock" aria-hidden="true"></i></span><input type="password" class="form-control" id="password" name="password" placeholder="Votre mot de passe" autocomplete="current-password" required></div></div><button type="submit" class="btn btn-primary w-100 py-2"><i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Se connecter</button></form>
-        <p class="auth-footer small text-center mb-0 mt-4"><i class="bi bi-shield-check me-1" aria-hidden="true"></i>Accès sécurisé à votre espace parking</p>
-    </div></div></main>
-    <script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
+<body class="min-h-screen bg-park-bg font-sans text-night antialiased">
+
+<button type="button" class="login-theme-toggle" data-theme-toggle
+        aria-label="Changer de thème" title="Mode clair" aria-pressed="true">
+    <svg data-theme-icon="light" hidden xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+    </svg>
+    <svg data-theme-icon="dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2"></path>
+        <path d="M12 20v2"></path>
+        <path d="m4.93 4.93 1.41 1.41"></path>
+        <path d="m17.66 17.66 1.41 1.41"></path>
+        <path d="M2 12h2"></path>
+        <path d="M20 12h2"></path>
+        <path d="m6.34 17.66-1.41 1.41"></path>
+        <path d="m19.07 4.93-1.41 1.41"></path>
+    </svg>
+</button>
+<div class="lg:grid lg:min-h-screen lg:grid-cols-[1.05fr_0.95fr]">
+
+    <!-- Colonne formulaire -->
+    <main class="relative flex flex-col px-6 py-8 sm:px-12 lg:px-16">
+        <div class="login-glow pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+
+        <a th:href="@{/login}" href="/login" class="inline-flex items-center gap-2.5 self-start rounded-xl" aria-label="ParkFlow, accueil">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-park-accent to-park-accent-hover text-park-on-accent shadow-soft" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                    <path d="M9 17V7h4a3 3 0 0 1 0 6H9"></path>
+                </svg>
+            </span>
+            <span class="text-lg font-extrabold tracking-tight">ParkFlow</span>
+        </a>
+
+        <div data-anim="card" class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-12 sm:py-16">
+            <h1 class="text-[2rem] font-extrabold leading-[1.1] tracking-tight text-night sm:text-4xl">
+                Connectez-vous à ParkFlow
+            </h1>
+            <p class="mt-3 text-base leading-relaxed text-night-muted">
+                Suivez les places, les réservations et les accès depuis un seul espace.
+            </p>
+
+            <div th:if="${param.error}" class="mt-7 flex items-start gap-3 rounded-2xl border border-park-danger/25 bg-park-danger-soft px-4 py-3.5 text-sm text-park-danger" role="alert">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 shrink-0" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" x2="12" y1="8" y2="12"></line>
+                    <line x1="12" x2="12.01" y1="16" y2="16"></line>
+                </svg>
+                <p><span class="font-semibold">Connexion impossible.</span> Vérifiez votre adresse e-mail et votre mot de passe.</p>
+            </div>
+            <div th:if="${param.logout}" class="mt-7 flex items-center gap-3 rounded-2xl border border-park-success/25 bg-park-success-soft px-4 py-3.5 text-sm text-park-success" role="status">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m9 12 2 2 4-4"></path>
+                </svg>
+                <p>Vous êtes déconnecté. À bientôt sur ParkFlow.</p>
+            </div>
+
+            <form th:action="@{/login}" method="post" class="mt-8 space-y-5"
+                  x-data="{ enCours: false }" @submit="window.setTimeout(function () { enCours = true }, 0)">
+                <div>
+                    <label for="username" class="mb-1.5 block text-sm font-semibold text-night">Adresse e-mail</label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-park-muted" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                            </svg>
+                        </span>
+                        <input type="email" id="username" name="username" placeholder="nom@exemple.com"
+                               autocomplete="username" required autofocus
+                               class="h-12 w-full rounded-xl border border-park-line bg-park-surface pl-11 pr-4 text-[0.95rem] shadow-sm placeholder:text-park-muted transition focus:border-park-accent focus:outline-none focus:ring-4 focus:ring-park-accent/15">
+                    </div>
+                </div>
+
+                <div x-data="{ show: false }">
+                    <div class="mb-1.5 flex items-baseline justify-between gap-3">
+                        <label for="password" class="block text-sm font-semibold text-night">Mot de passe</label>
+                        <a href="mailto:admin@parking.com?subject=Mot%20de%20passe%20oubli%C3%A9%20%E2%80%94%20ParkFlow"
+                           class="text-sm font-semibold text-park-accent hover:text-park-accent-hover hover:underline">Mot de passe oublié ?</a>
+                    </div>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute inset-y-0 left-4 flex items-center text-park-muted" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </span>
+                        <input :type="show ? 'text' : 'password'" id="password" name="password"
+                               placeholder="Votre mot de passe" autocomplete="current-password" required
+                               class="h-12 w-full rounded-xl border border-park-line bg-park-surface pl-11 pr-12 text-[0.95rem] shadow-sm placeholder:text-park-muted transition focus:border-park-accent focus:outline-none focus:ring-4 focus:ring-park-accent/15">
+                        <button type="button" @click="show = !show"
+                                :aria-label="show ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                                aria-label="Afficher le mot de passe"
+                                class="absolute inset-y-0 right-1.5 my-auto flex h-9 w-9 items-center justify-center rounded-lg text-park-muted transition hover:bg-park-surface-2 hover:text-park-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-park-accent">
+                            <svg x-show="!show" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg x-show="show" x-cloak xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                                <line x1="2" x2="22" y1="2" y2="22"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" id="remember-me" name="_remember-me" value="true"
+                           class="h-4 w-4 rounded border-park-line-strong accent-park-accent focus:ring-park-accent/40">
+                    <label for="remember-me" class="ml-2 select-none text-sm text-night-muted">Se souvenir de moi</label>
+                </div>
+
+                <button type="submit" :disabled="enCours" :aria-busy="enCours"
+                        class="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-semibold text-park-on-accent shadow-soft transition hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-park-accent/40 active:scale-[0.99] disabled:cursor-wait disabled:opacity-70 disabled:shadow-none motion-reduce:active:scale-100">
+                    <span x-cloak x-show="enCours"
+                          class="h-4 w-4 rounded-full border-2 border-park-on-accent/40 border-t-park-on-accent animate-spin motion-reduce:animate-none"
+                          aria-hidden="true"></span>
+                    <svg x-show="!enCours" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10 17 15 12 10 7"></polyline>
+                        <line x1="15" x2="3" y1="12" y2="12"></line>
+                    </svg>
+                    <span x-text="enCours ? 'Connexion en cours…' : 'Se connecter'">Se connecter</span>
+                </button>
+            </form>
+
+            <div class="mt-9 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-night-muted">
+                <span>Pas encore de compte ?</span>
+                <a href="mailto:admin@parking.com?subject=Demande%20d%27acc%C3%A8s%20ParkFlow"
+                   class="inline-flex items-center rounded-full border border-park-line bg-park-surface px-4 py-1.5 font-semibold text-night shadow-sm transition hover:border-park-line-strong hover:bg-park-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-park-accent">
+                    Contactez l'administrateur
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Colonne visuelle -->
+    <aside class="login-visual relative hidden items-center justify-center overflow-hidden p-12 lg:flex" aria-hidden="true">
+        <figure class="relative w-full max-w-md">
+            <div class="login-shot rounded-3xl bg-park-surface p-4 shadow-card">
+                <img th:src="@{/img/p3.avif}" src="/img/p3.avif"
+                     data-anim="kenburns"
+                     width="740" height="249"
+                     alt="" class="w-full rounded-2xl">
+            </div>
+            <figcaption class="absolute -bottom-5 left-6 flex items-center gap-2.5 rounded-2xl bg-park-surface px-4 py-3 shadow-chip">
+                <span class="h-2.5 w-2.5 rounded-full bg-park-success"></span>
+                <span class="text-sm font-semibold text-park-text">22 places libres</span>
+            </figcaption>
+        </figure>
+    </aside>
+</div>
 </body>
 </html>

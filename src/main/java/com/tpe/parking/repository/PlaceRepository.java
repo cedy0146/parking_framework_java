@@ -45,4 +45,7 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     long countByStatut(StatutPlace statut);
 
     long countByStatutAndZone(StatutPlace statut, String zone);
+
+    @Query("SELECT p.zone, p.statut, COUNT(p) FROM Place p GROUP BY p.zone, p.statut")
+    List<Object[]> compterParZoneEtStatut();
 }

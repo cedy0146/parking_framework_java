@@ -42,4 +42,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                                   Pageable pageable);
 
     long countByStatut(StatutReservation statut);
+
+    List<Reservation> findByDateCreationGreaterThanEqual(LocalDateTime debut);
 }

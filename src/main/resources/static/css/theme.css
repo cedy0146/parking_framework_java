@@ -1,19 +1,3660 @@
-/* Parking — Bootstrap 5.3 theme tokens and small component extensions. */
-:root, [data-bs-theme="light"] { --bs-primary:#2563eb; --bs-primary-rgb:37,99,235; --bs-secondary:#64748b; --bs-secondary-rgb:100,116,139; --bs-success:#15803d; --bs-success-rgb:21,128,61; --bs-danger:#dc2626; --bs-danger-rgb:220,38,38; --bs-warning:#b45309; --bs-warning-rgb:180,83,9; --bs-info:#0369a1; --bs-info-rgb:3,105,161; --bs-body-bg:#f8fafc; --bs-body-color:#172033; --bs-emphasis-color:#0f172a; --bs-secondary-bg:#f1f5f9; --bs-tertiary-bg:#eaf0f7; --bs-border-color:#dce4ee; --bs-border-radius:.75rem; --bs-border-radius-sm:.5rem; --bs-border-radius-lg:1rem; --bs-box-shadow:0 .5rem 1.5rem rgba(15,23,42,.08); --bs-box-shadow-sm:0 .125rem .5rem rgba(15,23,42,.08); --parking-sidebar:#111c30; --parking-sidebar-hover:rgba(255,255,255,.1); }
-[data-bs-theme="dark"] { --bs-primary:#8aaaf0; --bs-primary-rgb:138,170,240; --bs-secondary:#aeb7c5; --bs-secondary-rgb:174,183,197; --bs-success:#67d391; --bs-success-rgb:103,211,145; --bs-danger:#ef8795; --bs-danger-rgb:239,135,149; --bs-warning:#e7bd62; --bs-warning-rgb:231,189,98; --bs-info:#77c8e5; --bs-info-rgb:119,200,229; --bs-body-bg:#16191f; --bs-body-color:#e4e7ec; --bs-emphasis-color:#f5f7fa; --bs-secondary-bg:#1c2027; --bs-tertiary-bg:#232831; --bs-border-color:#343b47; --bs-box-shadow:0 .5rem 1.5rem rgba(0,0,0,.2); --parking-sidebar:#1a1e25; --parking-sidebar-hover:rgba(255,255,255,.08); }
-body { min-height:100vh; }
-.app-sidebar { background:var(--parking-sidebar); width:17rem; }.app-brand { color:#fff; letter-spacing:-.02em; }.app-brand-mark { background:var(--bs-primary); color:#fff; width:2.25rem; height:2.25rem; }.app-nav .nav-link { color:rgba(255,255,255,.78); border-radius:var(--bs-border-radius-sm); }.app-nav .nav-link:hover,.app-nav .nav-link:focus,.app-nav .nav-link.active { color:#fff; background:var(--parking-sidebar-hover); }.app-nav .nav-link.active { background:var(--bs-primary); }.app-main { min-width:0; }.app-header { background:color-mix(in srgb,var(--bs-body-bg) 88%,transparent); backdrop-filter:blur(12px); }
-.dashboard-card { border:0; box-shadow:var(--bs-box-shadow-sm); transition:transform .18s ease,box-shadow .18s ease; }.dashboard-card:hover { transform:translateY(-2px); box-shadow:var(--bs-box-shadow); }.metric-icon { width:2.75rem; height:2.75rem; }.metric-card--success { border-inline-start:.25rem solid var(--bs-success); }.metric-card--danger { border-inline-start:.25rem solid var(--bs-danger); }.metric-card--warning { border-inline-start:.25rem solid var(--bs-warning); }.metric-card--info { border-inline-start:.25rem solid var(--bs-info); }.quick-action { min-height:5.5rem; }.page-enter { animation:page-enter .3s ease-out both; }
-@keyframes page-enter { from { opacity:0; transform:translateY(.5rem); } to { opacity:1; transform:translateY(0); } } @media (prefers-reduced-motion:reduce) { .dashboard-card,.page-enter { transition:none; animation:none; } }
+/* ==========================================================================
+   ParkFlow — Landing SaaS sombre, accent bleu
+   1. Tokens  2. Base  3. Boutons  4. Formulaires  5. Tableaux
+   6. Badges & statuts  7. Alertes  8. Cartes & panneaux  9. Divers composants
+   10. En-tête & coquille  11. En-tête de page  12. Tableau de bord
+   13. Connexion / erreurs  14. Plan du parking  15. Divers
+   16. Landing page  17. Visuels (images p1, p2)  18. Animations
+   19. Modales CRUD & SweetAlert2  20. Mode clair  21. Bascule de thème
+   Le mode sombre est la valeur par défaut (:root) ; le mode clair vit dans
+   [data-bs-theme="light"]. Aucune couleur codée en dur hors tokens.
+   ========================================================================== */
 
-.parking-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(8rem,1fr)); gap:.85rem; }
-.parking-slot { min-height:7.25rem; border:1px solid var(--bs-border-color); background:var(--bs-tertiary-bg); color:var(--bs-emphasis-color); box-shadow:var(--bs-box-shadow-sm); transition:transform .18s ease,box-shadow .18s ease; }
-.parking-slot:hover,.parking-slot:focus-visible { transform:translateY(-2px); box-shadow:var(--bs-box-shadow); }
-.parking-slot--libre { border-top:.3rem solid var(--bs-success); }.parking-slot--occupee { border-top:.3rem solid var(--bs-danger); }.parking-slot--reservee { border-top:.3rem solid var(--bs-warning); }.parking-slot--hors-service { border-top:.3rem solid var(--bs-secondary); }
-.parking-slot[hidden] { display:none !important; }
-.legend-dot { width:.75rem; height:.75rem; }
+/* --------------------------------------------------------------------------
+   1. Tokens — mode sombre (défaut) ; redéfinis en mode clair (section 20)
+   Palette 60-30-10 : ~65 % neutres, ~30 % bleu, ~5 % statuts (uniquement
+   pour exprimer un état : libre / occupée / réservée / hors service).
+   -------------------------------------------------------------------------- */
+:root {
+  color-scheme: dark;
 
-.auth-page { background:radial-gradient(circle at 10% 10%,color-mix(in srgb,var(--bs-primary) 20%,transparent),transparent 32rem),var(--bs-body-bg); }
-.auth-card { width:min(100%,28rem); border:0; box-shadow:var(--bs-box-shadow); }.auth-brand-mark { width:3.5rem; height:3.5rem; background:var(--bs-primary); color:#fff; }.auth-card .form-control,.auth-card .input-group-text { min-height:3rem; }.auth-card .input-group-text { background:var(--bs-tertiary-bg); color:var(--bs-secondary-color); }.auth-footer { color:var(--bs-secondary-color); }
+  /* Surfaces */
+  --parking-bg: #070d1c;
+  --parking-band: #0b1327;
+  --parking-surface: #0d1630;
+  --parking-surface-2: #121d3d;
+  /* En-tête translucide */
+  --parking-topbar-bg: rgba(7, 13, 28, 0.82);
 
-.dashboard-hero { position:relative; overflow:hidden; border:0; color:#fff; background:linear-gradient(120deg,#173b87 0%,#2563eb 55%,#38bdf8 150%); box-shadow:var(--bs-box-shadow); }.dashboard-hero::after { content:""; position:absolute; width:21rem; height:21rem; right:-7rem; bottom:-12rem; border:2rem solid rgba(255,255,255,.12); border-radius:50%; }.dashboard-hero .text-white-50 { color:rgba(255,255,255,.78)!important; }.hero-availability { background:rgba(8,23,55,.24); border:1px solid rgba(255,255,255,.2); backdrop-filter:blur(8px); }.hero-availability-number { font-size:clamp(3rem,6vw,5rem); line-height:.9; }.hero-action { background:#fff; color:#174394; border-color:#fff; }.hero-action:hover,.hero-action:focus { background:#eaf2ff; color:#123676; border-color:#eaf2ff; }
+  /* Texte — contraste vérifié :
+     #eef3ff → 16,7:1 sur --parking-surface, 17,6:1 sur --parking-bg
+     #93a3c4 → 6,9:1 sur --parking-surface, 7,2:1 sur --parking-bg (AA ≥ 4,5:1) */
+  --parking-text: #eef3ff;
+  --parking-muted: #93a3c4;
+  --parking-border: rgba(148, 170, 255, 0.14);
+  --parking-border-strong: rgba(148, 170, 255, 0.28);
+  --parking-placeholder: #7d8cb0;
+
+  /* Mouvement */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 0.2s;
+  --dur-base: 0.45s;
+  --dur-slow: 0.9s;
+
+  /* Accent unique (bleu) — les verts/rouges/oranges restent sémantiques */
+  --parking-accent: #4d8dff;
+  --parking-accent-hover: #75a6ff;
+  --parking-accent-soft: rgba(77, 141, 255, 0.14);
+  --parking-accent-border: rgba(77, 141, 255, 0.35);
+  --parking-accent-contrast: #04122e;
+  --parking-accent-rgb: 77, 141, 255;
+  --parking-glow: rgba(77, 141, 255, 0.35);
+  /* Texte sur un bouton rempli vert/rouge (foncé en sombre : fonds éclaircis) */
+  --parking-on-filled: #04122e;
+
+  /* Statuts — UNE seule définition partagée par plan, donut, légendes,
+     badges et barres (--status-free / busy / booked / off). */
+  --status-free: #38bdf8;
+  --status-busy: #f87171;
+  --status-booked: #fbbf24;
+  --status-off: #94a3b8;
+  --status-free-soft: rgba(56, 189, 248, 0.14);
+  --status-busy-soft: rgba(248, 113, 113, 0.14);
+  --status-booked-soft: rgba(251, 191, 36, 0.14);
+  --status-off-soft: rgba(148, 163, 184, 0.14);
+  --status-free-border: rgba(56, 189, 248, 0.32);
+  --status-busy-border: rgba(248, 113, 113, 0.32);
+  --status-booked-border: rgba(251, 191, 36, 0.32);
+  --status-off-border: rgba(148, 163, 184, 0.32);
+
+  /* Sémantique Bootstrap — redirigée vers les statuts (aucune autre teinte) */
+  --parking-success: var(--status-free);
+  --parking-success-soft: var(--status-free-soft);
+  --parking-success-border: var(--status-free-border);
+  --parking-success-hover: #86efac;
+  --parking-danger: var(--status-busy);
+  --parking-danger-soft: var(--status-busy-soft);
+  --parking-danger-border: var(--status-busy-border);
+  --parking-danger-hover: #fca5a5;
+  --parking-warning: var(--status-booked);
+  --parking-warning-soft: var(--status-booked-soft);
+  --parking-warning-border: var(--status-booked-border);
+  --parking-info: #93c5fd;
+  --parking-info-soft: rgba(147, 197, 253, 0.14);
+  --parking-info-border: rgba(147, 197, 253, 0.32);
+  --parking-success-rgb: 74, 222, 128;
+  --parking-danger-rgb: 248, 113, 113;
+
+  /* Pastilles de légende (plan du parking) */
+  --parking-warning-dot: var(--status-booked);
+  --parking-muted-dot: var(--status-off);
+
+  /* Séries de graphiques — lues par Chart.js via getComputedStyle.
+     Les séries diffèrent par la LUMINOSITÉ (bleu moyen / bleu pâle / cyan). */
+  --chart-1: #4d8dff;
+  --chart-2: #b4ccff;
+  --chart-3: #38bdf8;
+  --chart-4: rgba(77, 141, 255, 0.18);
+
+  /* Reflets animés (barre d'occupation, survol des boutons) */
+  --parking-shine: rgba(255, 255, 255, 0.14);
+  --parking-btn-shine: rgba(255, 255, 255, 0.1);
+  /* Texte posé sur une image / un dégradé (toujours clair) */
+  --parking-on-image: #ffffff;
+  /* Voile appliqué sur les photos */
+  --parking-scrim-rgb: 7, 13, 28;
+
+  /* Ombres */
+  --parking-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --parking-shadow: 0 18px 44px -20px rgba(0, 0, 0, 0.8);
+
+  /* Rythme — pilule 999px, cartes 18px, champs/menus 14px */
+  --parking-radius-pill: 999px;
+  --parking-radius: 1.125rem;
+  --parking-radius-sm: 0.875rem;
+  --parking-space: 1.5rem;
+
+  /* Mappage Bootstrap */
+  --bs-body-font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bs-body-bg: var(--parking-bg);
+  --bs-body-color: var(--parking-text);
+  --bs-emphasis-color: var(--parking-text);
+  --bs-secondary-color: var(--parking-muted);
+  --bs-tertiary-bg: var(--parking-surface-2);
+  --bs-border-color: var(--parking-border);
+  --bs-border-radius: var(--parking-radius-sm);
+  --bs-border-radius-sm: 0.625rem;
+  --bs-border-radius-lg: var(--parking-radius);
+  --bs-border-radius-xl: 1.25rem;
+  --bs-border-radius-2xl: var(--parking-radius);
+  --bs-border-radius-pill: var(--parking-radius-pill);
+
+  --bs-primary: var(--parking-accent);
+  --bs-primary-rgb: 77, 141, 255;
+  --bs-secondary: var(--parking-muted);
+  --bs-secondary-rgb: 147, 163, 196;
+  --bs-success: var(--parking-success);
+  --bs-success-rgb: 74, 222, 128;
+  --bs-danger: var(--parking-danger);
+  --bs-danger-rgb: 248, 113, 113;
+  --bs-warning: var(--parking-warning);
+  --bs-warning-rgb: 251, 191, 36;
+  --bs-info: var(--parking-info);
+  --bs-info-rgb: 147, 197, 253;
+  --bs-light: var(--parking-surface-2);
+  --bs-light-rgb: 18, 29, 61;
+  --bs-dark: var(--parking-bg);
+  --bs-dark-rgb: 7, 13, 28;
+  --bs-white: #ffffff;
+
+  --bs-link-color: var(--parking-accent);
+  --bs-link-hover-color: var(--parking-accent-hover);
+  --bs-link-decoration: none;
+
+  --bs-focus-ring-color: rgba(77, 141, 255, 0.3);
+  --bs-focus-ring-rgb: 77, 141, 255;
+  --bs-box-shadow: var(--parking-shadow);
+  --bs-box-shadow-sm: var(--parking-shadow-sm);
+
+  --bs-form-select-background-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2393a3c4' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* --------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+  /* Colonne flex : <main> grandit (flex:1) et les lignes de repère
+     de #main-content descendent jusqu'en bas de l'écran. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--parking-text);
+  background-color: var(--parking-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Halo bleu décoratif, haut à droite */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    46rem 32rem at 88% -8%,
+    rgba(var(--parking-accent-rgb), 0.15),
+    transparent 62%
+  );
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--parking-text);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Emphasis: serif italic accentué, sans ellipse */
+.hl {
+  position: relative;
+  display: inline-block;
+  font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--parking-accent);
+  white-space: nowrap;
+}
+
+.hl-mark {
+  display: none;
+}
+
+a {
+  text-underline-offset: 0.15em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--parking-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.form-control:focus-visible,
+.form-select:focus-visible,
+.btn:focus-visible,
+.form-check-input:focus-visible {
+  outline: none;
+}
+
+.tabular,
+.h5,
+.table td,
+.table th,
+.metric-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 1rem;
+  z-index: 2000;
+  padding: 0.6rem 1rem;
+  background-color: var(--parking-accent);
+  color: var(--parking-accent-contrast);
+  font-weight: 600;
+  border-radius: var(--parking-radius-sm);
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus-visible {
+  top: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Boutons — pilules 999px
+   -------------------------------------------------------------------------- */
+.btn {
+  --bs-btn-font-weight: 600;
+  --bs-btn-font-size: 0.9rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--parking-radius-pill);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  --bs-btn-color: var(--parking-accent-contrast);
+  --bs-btn-bg: var(--parking-accent);
+  --bs-btn-border-color: var(--parking-accent);
+  --bs-btn-hover-color: var(--parking-accent-contrast);
+  --bs-btn-hover-bg: var(--parking-accent-hover);
+  --bs-btn-hover-border-color: var(--parking-accent-hover);
+  --bs-btn-active-color: var(--parking-accent-contrast);
+  --bs-btn-active-bg: var(--parking-accent-hover);
+  --bs-btn-active-border-color: var(--parking-accent-hover);
+  --bs-btn-disabled-color: var(--parking-accent-hover);
+  --bs-btn-disabled-bg: var(--parking-accent-soft);
+  --bs-btn-disabled-border-color: var(--parking-accent-border);
+  box-shadow: 0 10px 26px -14px rgba(var(--parking-accent-rgb), 0.55);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--parking-accent);
+  --bs-btn-border-color: var(--parking-border-strong);
+  --bs-btn-hover-color: var(--parking-accent-contrast);
+  --bs-btn-hover-bg: var(--parking-accent);
+  --bs-btn-hover-border-color: var(--parking-accent);
+  --bs-btn-active-color: var(--parking-accent-contrast);
+  --bs-btn-active-bg: var(--parking-accent-hover);
+  --bs-btn-active-border-color: var(--parking-accent-hover);
+  --bs-btn-disabled-color: var(--parking-accent);
+  --bs-btn-disabled-bg: var(--parking-surface);
+  --bs-btn-disabled-border-color: var(--parking-border);
+  background-color: var(--parking-surface);
+}
+
+.btn-outline-secondary,
+.btn-secondary {
+  --bs-btn-color: var(--parking-text);
+  --bs-btn-bg: var(--parking-surface);
+  --bs-btn-border-color: var(--parking-border-strong);
+  --bs-btn-hover-color: var(--parking-text);
+  --bs-btn-hover-bg: var(--parking-surface-2);
+  --bs-btn-hover-border-color: var(--parking-border-strong);
+  --bs-btn-active-color: var(--parking-text);
+  --bs-btn-active-bg: var(--parking-surface-2);
+  --bs-btn-active-border-color: var(--parking-border-strong);
+  --bs-btn-disabled-color: var(--parking-muted);
+  --bs-btn-disabled-bg: var(--parking-surface);
+  --bs-btn-disabled-border-color: var(--parking-border);
+}
+
+.btn-outline-secondary {
+  background-color: var(--parking-surface);
+}
+
+.btn-success {
+  --bs-btn-color: var(--parking-on-filled);
+  --bs-btn-bg: var(--parking-success);
+  --bs-btn-border-color: var(--parking-success);
+  --bs-btn-hover-color: var(--parking-on-filled);
+  --bs-btn-hover-bg: var(--parking-success-hover);
+  --bs-btn-hover-border-color: var(--parking-success-hover);
+  --bs-btn-active-color: var(--parking-on-filled);
+  --bs-btn-active-bg: var(--parking-success-hover);
+  --bs-btn-active-border-color: var(--parking-success-hover);
+  --bs-btn-disabled-color: var(--parking-success);
+  --bs-btn-disabled-bg: var(--parking-success-soft);
+  --bs-btn-disabled-border-color: var(--parking-success-border);
+}
+
+.btn-danger {
+  --bs-btn-color: var(--parking-on-filled);
+  --bs-btn-bg: var(--parking-danger);
+  --bs-btn-border-color: var(--parking-danger);
+  --bs-btn-hover-color: var(--parking-on-filled);
+  --bs-btn-hover-bg: var(--parking-danger-hover);
+  --bs-btn-hover-border-color: var(--parking-danger-hover);
+  --bs-btn-active-color: var(--parking-on-filled);
+  --bs-btn-active-bg: var(--parking-danger-hover);
+  --bs-btn-active-border-color: var(--parking-danger-hover);
+  --bs-btn-disabled-color: var(--parking-danger);
+  --bs-btn-disabled-bg: var(--parking-danger-soft);
+  --bs-btn-disabled-border-color: var(--parking-danger-border);
+}
+
+.btn-info {
+  --bs-btn-color: var(--parking-info);
+  --bs-btn-bg: var(--parking-info-soft);
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--parking-info);
+  --bs-btn-hover-bg: var(--parking-info-border);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--parking-info);
+  --bs-btn-active-bg: var(--parking-info-border);
+  --bs-btn-active-border-color: transparent;
+}
+
+.btn-outline-info {
+  --bs-btn-color: var(--parking-info);
+  --bs-btn-border-color: var(--parking-border-strong);
+  --bs-btn-hover-color: var(--parking-info);
+  --bs-btn-hover-bg: var(--parking-info-soft);
+  --bs-btn-hover-border-color: var(--parking-info-soft);
+}
+
+.btn-sm {
+  min-height: 2.125rem;
+  padding: 0.2rem 0.8rem;
+  font-size: 0.8375rem;
+}
+
+.btn-lg {
+  min-height: 3.15rem;
+  padding: 0.65rem 1.6rem;
+  font-size: 0.975rem;
+}
+
+/* --------------------------------------------------------------------------
+   4. Formulaires — champs 14px
+   -------------------------------------------------------------------------- */
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--parking-text);
+  margin-bottom: 0.375rem;
+}
+
+.form-control,
+.form-select {
+  min-height: 2.75rem;
+  border-color: var(--parking-border-strong);
+  border-radius: var(--parking-radius-sm);
+  background-color: var(--parking-surface);
+  font-size: 0.9375rem;
+  color: var(--parking-text);
+}
+
+.form-control::placeholder {
+  color: var(--parking-placeholder);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--parking-accent);
+  box-shadow: 0 0 0 0.2rem rgba(var(--parking-accent-rgb), 0.16);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--parking-danger);
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem rgba(var(--parking-danger-rgb), 0.16);
+}
+
+.input-group-text {
+  background-color: var(--parking-surface-2);
+  border-color: var(--parking-border-strong);
+  color: var(--parking-muted);
+}
+
+.invalid-feedback {
+  font-size: 0.8125rem;
+  color: var(--parking-danger);
+  font-weight: 500;
+  margin-top: 0.35rem;
+}
+
+.form-error-summary {
+  border: 1px solid var(--parking-danger-border);
+  background-color: var(--parking-danger-soft);
+  color: var(--parking-danger);
+  border-radius: var(--parking-radius-sm);
+  padding: 0.9rem 1rem;
+  font-size: 0.9375rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-error-summary ul {
+  margin: 0.5rem 0 0;
+  padding-inline-start: 1.1rem;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--parking-border);
+  margin-top: 0.5rem;
+}
+
+.form-hint {
+  font-size: 0.8125rem;
+  color: var(--parking-muted);
+  margin-top: 0.35rem;
+}
+
+/* --------------------------------------------------------------------------
+   5. Tableaux
+   -------------------------------------------------------------------------- */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--parking-text);
+  --bs-table-border-color: var(--parking-border);
+  --bs-table-hover-bg: var(--parking-surface-2);
+  margin-bottom: 0;
+  font-size: 0.9375rem;
+}
+
+.table > :not(caption) > * > * {
+  padding: 0.85rem 0.75rem;
+  background-color: transparent;
+  box-shadow: none;
+  vertical-align: middle;
+}
+
+.table thead th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--parking-muted);
+  background-color: var(--parking-surface-2);
+  border-bottom: 1px solid var(--parking-border);
+  white-space: nowrap;
+}
+
+.table thead th:first-child {
+  border-top-left-radius: var(--parking-radius-sm);
+}
+
+.table thead th:last-child {
+  border-top-right-radius: var(--parking-radius-sm);
+}
+
+.table tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.table .cell-muted {
+  color: var(--parking-muted);
+}
+
+.table .cell-strong {
+  font-weight: 600;
+}
+
+.table-responsive {
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  background-color: var(--parking-surface);
+}
+
+.table-responsive > .table {
+  margin-bottom: 0;
+}
+
+.table-empty {
+  text-align: center;
+  color: var(--parking-muted);
+  padding: 2.5rem 1rem !important;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--parking-radius-sm);
+  border: 1px solid var(--parking-border);
+  background-color: var(--parking-surface);
+  color: var(--parking-muted);
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.icon-btn:hover {
+  background-color: var(--parking-surface-2);
+  color: var(--parking-accent);
+  border-color: var(--parking-border-strong);
+}
+
+.icon-btn--danger:hover {
+  background-color: var(--parking-danger-soft);
+  color: var(--parking-danger);
+  border-color: var(--parking-danger-border);
+}
+
+.link-primary {
+  color: var(--parking-accent);
+}
+
+.link-danger {
+  color: var(--parking-danger);
+}
+
+/* --------------------------------------------------------------------------
+   6. Badges & statuts
+   -------------------------------------------------------------------------- */
+.badge {
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.01em;
+  padding: 0.42em 0.75em;
+  border-radius: var(--parking-radius-pill);
+  white-space: nowrap;
+}
+
+.badge.bg-success { background-color: var(--parking-success-soft) !important; color: var(--parking-success) !important; }
+.badge.bg-danger  { background-color: var(--parking-danger-soft) !important;  color: var(--parking-danger) !important; }
+.badge.bg-warning { background-color: var(--parking-warning-soft) !important; color: var(--parking-warning) !important; }
+.badge.bg-info    { background-color: var(--parking-info-soft) !important;    color: var(--parking-info) !important; }
+.badge.bg-primary { background-color: var(--parking-accent-soft) !important; color: var(--parking-accent) !important; }
+.badge.bg-secondary { background-color: var(--parking-surface-2) !important; color: var(--parking-muted) !important; }
+
+.legend-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.legend-dot.bg-success { background-color: var(--parking-success) !important; }
+.legend-dot.bg-danger { background-color: var(--parking-danger) !important; }
+.legend-dot.bg-warning { background-color: var(--parking-warning-dot) !important; }
+.legend-dot.bg-secondary { background-color: var(--parking-muted-dot) !important; }
+
+.legend-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--parking-muted);
+}
+
+.legend-list span.d-inline-flex {
+  gap: 0.45rem;
+}
+
+/* --------------------------------------------------------------------------
+   7. Alertes
+   -------------------------------------------------------------------------- */
+.alert {
+  border-radius: var(--parking-radius-sm);
+  border: 1px solid transparent;
+  font-size: 0.9375rem;
+  padding: 0.9rem 1rem;
+}
+
+.alert-success { --bs-alert-color: var(--parking-success); --bs-alert-bg: var(--parking-success-soft); --bs-alert-border-color: var(--parking-success-border); }
+.alert-danger  { --bs-alert-color: var(--parking-danger);  --bs-alert-bg: var(--parking-danger-soft);  --bs-alert-border-color: var(--parking-danger-border); }
+.alert-warning { --bs-alert-color: var(--parking-warning); --bs-alert-bg: var(--parking-warning-soft); --bs-alert-border-color: var(--parking-warning-border); }
+.alert-info    { --bs-alert-color: var(--parking-info);    --bs-alert-bg: var(--parking-info-soft);    --bs-alert-border-color: var(--parking-info-border); }
+
+.alert .btn-close {
+  opacity: 0.55;
+}
+
+/* --------------------------------------------------------------------------
+   8. Cartes & panneaux — rayon 18px
+   -------------------------------------------------------------------------- */
+.card {
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  box-shadow: var(--parking-shadow-sm);
+}
+
+.card-header,
+.card-footer {
+  background-color: transparent;
+  border-color: var(--parking-border);
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+@media (min-width: 992px) {
+  .card-body {
+    padding: 1.5rem;
+  }
+}
+
+.panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.panel-subtitle {
+  font-size: 0.875rem;
+  color: var(--parking-muted);
+  margin: 0;
+}
+
+.filter-bar {
+  padding: 1rem 1.25rem;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  margin-bottom: 1.25rem;
+  box-shadow: var(--parking-shadow-sm);
+}
+
+.filter-bar .form-label {
+  font-size: 0.78rem;
+  color: var(--parking-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--parking-muted);
+}
+
+.empty-state i {
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.empty-state p {
+  margin: 0.75rem 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   9. Divers composants Bootstrap
+   -------------------------------------------------------------------------- */
+.progress {
+  --bs-progress-bg: var(--parking-surface-2);
+  --bs-progress-bar-bg: var(--parking-accent);
+  border-radius: 999px;
+  height: 0.6rem;
+}
+
+.progress-bar {
+  border-radius: 999px;
+}
+
+.pagination {
+  --bs-pagination-color: var(--parking-text);
+  --bs-pagination-bg: var(--parking-surface);
+  --bs-pagination-border-color: var(--parking-border);
+  --bs-pagination-hover-color: var(--parking-text);
+  --bs-pagination-hover-bg: var(--parking-surface-2);
+  --bs-pagination-hover-border-color: var(--parking-border);
+  --bs-pagination-active-bg: var(--parking-accent);
+  --bs-pagination-active-border-color: var(--parking-accent);
+  --bs-pagination-disabled-color: var(--parking-muted);
+  --bs-pagination-disabled-bg: var(--parking-surface);
+  --bs-pagination-disabled-border-color: var(--parking-border);
+}
+
+.pagination .page-link {
+  min-width: 2.4rem;
+  text-align: center;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--parking-radius-sm) !important;
+}
+
+.dropdown-menu {
+  --bs-dropdown-bg: var(--parking-surface);
+  --bs-dropdown-border-color: var(--parking-border);
+  --bs-dropdown-link-color: var(--parking-text);
+  --bs-dropdown-link-hover-bg: var(--parking-surface-2);
+  --bs-dropdown-link-active-bg: var(--parking-accent-soft);
+  --bs-dropdown-link-active-color: var(--parking-accent);
+  border-radius: var(--parking-radius-sm);
+  box-shadow: var(--parking-shadow);
+  padding: 0.35rem;
+  font-size: 0.9375rem;
+}
+
+.dropdown-item {
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.tooltip {
+  --bs-tooltip-bg: var(--parking-text);
+  --bs-tooltip-color: var(--parking-bg);
+  --bs-tooltip-border-color: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   10. En-tête & coquille — navigation horizontale en pilule
+   -------------------------------------------------------------------------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  background-color: var(--parking-topbar-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--parking-border);
+}
+
+.app-header-inner {
+  position: relative;
+  z-index: 1;
+  /* 3 colonnes : marque | pilule centrée | outils. La pilule vit dans une
+     colonne minmax(0,1fr) : elle ne peut jamais repousser les outils. */
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.app-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--parking-text);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.app-brand-mark {
+  width: 2.15rem;
+  height: 2.15rem;
+  background: linear-gradient(
+    140deg,
+    var(--parking-accent) 0%,
+    var(--parking-accent-hover) 100%
+  );
+  color: var(--parking-accent-contrast);
+  border-radius: 0.65rem;
+  font-size: 1rem;
+  box-shadow: 0 8px 20px -10px rgba(var(--parking-accent-rgb), 0.7);
+}
+
+/* --- Pilule centrale de navigation (≥ 1200px) --- */
+.nav-pill {
+  position: relative;
+  display: none;
+}
+
+@media (min-width: 1200px) {
+  .nav-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.1rem;
+    justify-self: center;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.25rem;
+    background-color: var(--parking-surface);
+    border: 1px solid var(--parking-border);
+    border-radius: var(--parking-radius-pill);
+    box-shadow: var(--parking-shadow-sm);
+    /* Jamais overflow:hidden ici : les menus déroulants débordent en bas. */
+    overflow: visible;
+    white-space: nowrap;
+  }
+}
+
+/* Curseur unique qui glisse vers le lien actif */
+.nav-pill-indicator {
+  position: absolute;
+  top: 0.25rem;
+  left: 0;
+  height: calc(100% - 0.5rem);
+  border-radius: var(--parking-radius-pill);
+  background-color: var(--parking-accent);
+  opacity: 0.16;
+  pointer-events: none;
+  transition: transform var(--dur-slow, 0.4s) var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
+    width var(--dur-slow, 0.4s) var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  box-shadow: 0 0 12px rgba(var(--parking-accent-rgb), 0.35);
+}
+
+.nav-pill-indicator.is-hidden {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-pill-indicator {
+    transition: none;
+  }
+}
+
+.nav-pill-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.5rem;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  border-radius: var(--parking-radius-pill);
+  background: none;
+  color: var(--parking-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.nav-pill-link:hover,
+.nav-pill-link:focus-visible {
+  color: var(--parking-text);
+  background-color: var(--parking-surface-2);
+}
+
+.nav-pill-link.active {
+  color: var(--parking-text);
+}
+
+/* Barre bleue 2×24px sous le libellé du lien actif + halo */
+.nav-pill-link.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 24px;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--parking-accent);
+  box-shadow: 0 0 10px rgba(var(--parking-accent-rgb), 0.85);
+  transform: translateX(-50%);
+  animation: nav-bar-glow 2.8s var(--ease-out) infinite;
+}
+
+@keyframes nav-bar-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(var(--parking-accent-rgb), 0.55);
+  }
+  50% {
+    box-shadow: 0 0 13px rgba(var(--parking-accent-rgb), 0.95);
+  }
+}
+
+.nav-pill-link i {
+  font-size: 1rem;
+}
+
+.nav-pill-caret {
+  font-size: 0.75rem !important;
+  opacity: 0.65;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+/* Un seul chevron par menu : on retire le chevron natif de Bootstrap,
+   l'icône .nav-pill-caret porte seule l'indication. */
+.nav-pill .dropdown-toggle::after {
+  display: none;
+}
+
+.nav-pill-drop.show .nav-pill-caret {
+  transform: rotate(180deg);
+}
+
+.nav-pill .dropdown-menu {
+  font-size: 0.9rem;
+  min-width: 15rem;
+  margin-top: 0.4rem;
+}
+
+.nav-pill .dropdown-item.active {
+  background-color: var(--parking-accent-soft);
+  color: var(--parking-accent);
+  font-weight: 600;
+}
+
+/* --- Outils (thème, couleur, utilisateur, déconnexion, menu mobile) --- */
+.app-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* --- Sélecteur de couleur d'accent --- */
+.accent-picker-wrap {
+  position: relative;
+}
+
+.accent-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1050;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border-strong);
+  border-radius: var(--parking-radius-sm);
+  box-shadow: var(--parking-shadow);
+  padding: 0.75rem;
+  min-width: 11rem;
+}
+
+.accent-popup[hidden] {
+  display: none;
+}
+
+.accent-popup-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--parking-muted);
+  margin: 0 0 0.5rem;
+}
+
+.accent-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+
+.accent-swatch {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-color: var(--sw);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.accent-swatch:hover {
+  transform: scale(1.15);
+}
+
+.accent-swatch.is-active {
+  border-color: var(--parking-text);
+  box-shadow: 0 0 0 2px var(--parking-surface), 0 0 0 4px var(--sw);
+}
+
+.app-user-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background-color: var(--parking-accent-soft);
+  color: var(--parking-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.app-user-meta {
+  display: none;
+  flex-direction: column;
+  line-height: 1.2;
+  padding-inline: 0.15rem;
+}
+
+/* Identité affichée uniquement quand l'en-tête a assez de place */
+@media (min-width: 1400px) {
+  .app-user-meta {
+    display: flex;
+  }
+}
+
+.app-user-name {
+  font-size: 0.8375rem;
+  font-weight: 700;
+  color: var(--parking-text);
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-user-role {
+  font-size: 0.7rem;
+  color: var(--parking-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.app-menu-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--parking-radius-sm);
+  border: 1px solid var(--parking-border);
+  background-color: var(--parking-surface);
+  color: var(--parking-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+@media (min-width: 1200px) {
+  .app-menu-btn {
+    display: none;
+  }
+}
+
+/* --- Contenu principal : conteneur 1200px + lignes de repère 1px --- */
+#main-content {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 1.75rem 1.25rem 3.5rem;
+}
+
+@media (min-width: 768px) {
+  #main-content {
+    padding: 2.25rem 1.75rem 4rem;
+  }
+}
+
+#main-content::before,
+#main-content::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: var(--parking-border);
+  pointer-events: none;
+}
+
+#main-content::before {
+  left: 0;
+}
+
+#main-content::after {
+  right: 0;
+}
+
+@media (max-width: 991.98px) {
+  #main-content::before,
+  #main-content::after {
+    display: none;
+  }
+}
+
+/* --- Tiroir de navigation mobile (offcanvas) --- */
+.offcanvas.app-drawer {
+  --bs-offcanvas-width: 19rem;
+  background-color: var(--parking-surface);
+  border-inline-start: 1px solid var(--parking-border);
+  color: var(--parking-text);
+}
+
+.app-drawer .offcanvas-header {
+  border-bottom: 1px solid var(--parking-border);
+  padding: 1rem 1.15rem;
+}
+
+.app-drawer .offcanvas-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.app-drawer .offcanvas-body {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.nav-group-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--parking-muted);
+  padding: 0.9rem 0.75rem 0.35rem;
+  margin: 0;
+}
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.75rem;
+  min-height: 2.6rem;
+  color: var(--parking-muted);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border: 0;
+  border-radius: var(--parking-radius-sm);
+  background: none;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.drawer-link:hover,
+.drawer-link:focus-visible {
+  color: var(--parking-text);
+  background-color: var(--parking-surface-2);
+}
+
+.drawer-link.active {
+  color: var(--parking-accent);
+  background-color: var(--parking-accent-soft);
+}
+
+.drawer-link i {
+  font-size: 1.05rem;
+  width: 1.15rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.app-drawer-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--parking-border);
+}
+
+/* --------------------------------------------------------------------------
+   11. En-tête de page
+   -------------------------------------------------------------------------- */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--parking-accent);
+  margin-bottom: 0.35rem;
+}
+
+/* Chevron « › » après le surtitre de page (classe .page-eyebrow) */
+.page-eyebrow::after {
+  content: "›";
+  display: inline-block;
+  margin-inline-start: 0.35em;
+  font-size: 1.1em;
+  line-height: 1;
+  transform: translateY(1px);
+}
+
+.page-title {
+  font-size: clamp(1.55rem, 2.4vw, 1.95rem);
+  font-weight: 800;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: var(--parking-muted);
+  font-size: 0.9375rem;
+  margin: 0.4rem 0 0;
+  max-width: 65ch;
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* --------------------------------------------------------------------------
+   12. Tableau de bord
+   -------------------------------------------------------------------------- */
+.metric-card {
+  border: 1px solid var(--parking-border);
+  box-shadow: var(--parking-shadow-sm);
+}
+
+.metric-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--parking-muted);
+  margin-bottom: 0.5rem;
+}
+
+.metric-value {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.metric-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--parking-accent);
+  text-decoration: none;
+  margin-top: 0.9rem;
+}
+
+.metric-link:hover {
+  color: var(--parking-accent-hover);
+  text-decoration: underline;
+}
+
+.metric-dot {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--parking-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.metric-dot--success { background-color: var(--parking-success-soft); color: var(--parking-success); }
+.metric-dot--danger  { background-color: var(--parking-danger-soft);  color: var(--parking-danger); }
+.metric-dot--warning { background-color: var(--parking-warning-soft); color: var(--parking-warning); }
+.metric-dot--info    { background-color: var(--parking-info-soft);    color: var(--parking-info); }
+
+.text-success-soft { color: var(--parking-success); }
+.text-danger-soft  { color: var(--parking-danger); }
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  text-align: start;
+  text-decoration: none;
+  color: var(--parking-text);
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.quick-action:hover {
+  border-color: var(--parking-border-strong);
+  background-color: var(--parking-surface-2);
+  color: var(--parking-text);
+}
+
+.quick-action .quick-action-title {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.quick-action .quick-action-desc {
+  display: block;
+  font-size: 0.8125rem;
+  color: var(--parking-muted);
+}
+
+.quick-action i:last-child {
+  margin-inline-start: auto;
+  color: var(--parking-muted);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  text-align: center;
+}
+
+/* Carte « Occupation actuelle » : les statistiques occupent la hauteur
+   restante et restent centrées verticalement (flex-grow). */
+.card-body.occupancy-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body.occupancy-body .summary-grid {
+  flex-grow: 1;
+  align-content: center;
+}
+
+.summary-grid > div {
+  padding: 0.5rem 0.75rem;
+  border-inline-end: 1px solid var(--parking-border);
+}
+
+.summary-grid > div:last-child {
+  border-inline-end: 0;
+}
+
+.summary-grid .metric-label {
+  margin-bottom: 0.25rem;
+}
+
+.summary-grid .summary-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   13. Connexion / erreurs
+   -------------------------------------------------------------------------- */
+.auth-page {
+  position: relative;
+  background-color: var(--parking-bg);
+  background-image: radial-gradient(
+    circle at 50% -10%,
+    rgba(var(--parking-accent-rgb), 0.12),
+    transparent 42rem
+  );
+}
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 27rem);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  box-shadow: var(--parking-shadow);
+  background-color: var(--parking-surface);
+}
+
+.auth-card--narrow {
+  width: min(100%, 32rem);
+}
+
+.auth-brand-mark {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(
+    140deg,
+    var(--parking-accent) 0%,
+    var(--parking-accent-hover) 100%
+  );
+  color: var(--parking-accent-contrast);
+  border-radius: var(--parking-radius-sm);
+  font-size: 1.35rem;
+  box-shadow: 0 10px 24px -12px rgba(var(--parking-accent-rgb), 0.7);
+}
+
+.auth-card .form-control {
+  min-height: 2.875rem;
+}
+
+.auth-footer {
+  color: var(--parking-muted);
+  font-size: 0.8125rem;
+}
+
+/* --- Modale de connexion (#loginModal, landing) --- */
+#loginModal .modal-content {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--parking-border);
+  background-color: var(--parking-surface);
+  color: var(--parking-text);
+}
+
+.login-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .login-modal-grid {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+}
+
+/* Colonne visuelle : photo + voile bleu sombre */
+.login-modal-visual {
+  position: relative;
+  display: none;
+  min-height: 100%;
+  background-color: var(--parking-bg);
+}
+
+@media (min-width: 768px) {
+  .login-modal-visual {
+    display: block;
+  }
+}
+
+.login-modal-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-modal-visual::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(var(--parking-accent-rgb), 0.55) 0%,
+    rgba(4, 33, 29, 0.85) 100%
+  );
+}
+
+.login-modal-slogan {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 1;
+  margin: 0;
+  padding: 1.75rem;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.login-modal-slogan em {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  color: #b7efe6;
+}
+
+/* Colonne formulaire */
+.login-modal-pane {
+  position: relative;
+  padding: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .login-modal-pane {
+    padding: 2.25rem 2rem;
+  }
+}
+
+.login-modal-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--parking-accent);
+  margin-bottom: 0.5rem;
+}
+
+.login-modal-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.login-modal-sub {
+  color: var(--parking-muted);
+  font-size: 0.9375rem;
+  margin: 0.35rem 0 0;
+}
+
+.login-modal-close {
+  position: absolute;
+  top: 1rem;
+  inset-inline-end: 1rem;
+}
+
+.login-modal-form {
+  margin-top: 1.5rem;
+}
+
+.login-modal-form .form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.login-modal-form .form-control {
+  min-height: 2.875rem;
+}
+
+/* Œil afficher / masquer le mot de passe */
+.login-pw-toggle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  border: 0;
+  background: none;
+  color: var(--parking-muted);
+  cursor: pointer;
+}
+
+.login-pw-toggle:hover {
+  color: var(--parking-text);
+}
+
+.login-pw-wrap {
+  position: relative;
+}
+
+.login-pw-wrap .form-control {
+  padding-inline-end: 2.75rem;
+}
+
+/* Erreur en ligne (shake, sans révéler l'existence du compte) */
+.login-modal-alert {
+  margin-top: 1.25rem;
+  border-radius: var(--parking-radius-sm);
+}
+
+.login-modal-alert.is-shaking {
+  animation: login-shake 0.4s ease;
+}
+
+@keyframes login-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Bouton principal bleu */
+#loginModal .login-modal-submit {
+  width: 100%;
+  min-height: 2.875rem;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-modal-alert.is-shaking {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   14. Plan du parking
+   -------------------------------------------------------------------------- */
+.parking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.85rem;
+}
+
+.parking-slot {
+  min-height: 7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.85rem;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-sm);
+  color: var(--parking-text);
+  font-size: 0.875rem;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--parking-shadow-sm);
+  transition: border-color 0.15s ease, transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.parking-slot:hover,
+.parking-slot:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--parking-shadow);
+  border-color: var(--parking-border-strong);
+}
+
+.parking-slot--libre {
+  background-color: var(--parking-success-soft);
+  border-color: var(--parking-success-border);
+}
+
+.parking-slot--occupee {
+  background-color: var(--parking-danger-soft);
+  border-color: var(--parking-danger-border);
+}
+
+.parking-slot--reservee {
+  background-color: var(--parking-warning-soft);
+  border-color: var(--parking-warning-border);
+}
+
+.parking-slot--hors-service {
+  background-color: var(--parking-surface-2);
+  border-color: var(--parking-border-strong);
+}
+
+.parking-slot[hidden] {
+  display: none !important;
+}
+
+.parking-slot .slot-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.parking-slot .slot-number {
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.parking-slot .slot-icon {
+  font-size: 0.95rem;
+  color: var(--parking-muted);
+}
+
+.parking-slot .slot-zone {
+  color: var(--parking-muted);
+  font-size: 0.8125rem;
+}
+
+.parking-slot--libre .badge { background-color: var(--parking-surface) !important; color: var(--parking-success) !important; }
+.parking-slot--occupee .badge { background-color: var(--parking-surface) !important; color: var(--parking-danger) !important; }
+.parking-slot--reservee .badge { background-color: var(--parking-surface) !important; color: var(--parking-warning) !important; }
+.parking-slot--hors-service .badge { background-color: var(--parking-surface) !important; color: var(--parking-muted) !important; }
+
+.status-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.15rem;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  box-shadow: var(--parking-shadow-sm);
+  height: 100%;
+}
+
+.status-tile-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--parking-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-tile-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.25rem 0;
+}
+
+@media (min-width: 576px) {
+  .plan-card-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   15. Divers
+   -------------------------------------------------------------------------- */
+.section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .parking-slot:hover,
+  .parking-slot:focus-visible {
+    transform: none !important;
+  }
+
+  /* — Neutralisation complète des animations (section 18) — */
+  .page-enter,
+  .stagger-item,
+  .badge,
+  .alert,
+  .alert-danger,
+  .form-error-summary,
+  .form-control:focus,
+  .form-select:focus,
+  .nav-pill-link.active::after,
+  .metric-card .metric-dot::before,
+  .parking-slot--libre::after,
+  .progress-bar::after,
+  .btn:hover::after,
+  .float-slow,
+  .hl-mark ellipse {
+    animation: none !important;
+  }
+
+  :where(html.anim-js) .hl-mark ellipse {
+    stroke-dashoffset: 0 !important;
+  }
+
+  .page-enter,
+  .stagger-item,
+  .badge,
+  .alert,
+  .alert-danger,
+  .form-error-summary,
+  .parking-slot,
+  .parking-slot:hover,
+  .card,
+  .card:hover,
+  .btn:active,
+  .reveal,
+  :where(html.anim-js) .reveal,
+  :where(html.anim-js) .reveal:not(.is-visible),
+  body.page-leaving {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  body.page-leaving {
+    transition: none !important;
+  }
+
+  .app-brand-mark,
+  .auth-brand-mark {
+    animation: none !important;
+  }
+
+  .nav-pill-link i,
+  .btn i,
+  .quick-action i:last-child {
+    transform: none !important;
+  }
+
+  .progress-bar.is-filling {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .parking-grid {
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  }
+
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .page-actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   16. Landing page — page publique sur «/»
+   -------------------------------------------------------------------------- */
+.landing-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.landing-body > main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .landing-body > main {
+    padding-inline: 1.75rem;
+  }
+}
+
+/* Héros : 2 colonnes 55 / 45 */
+.hero {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+  padding: clamp(2.5rem, 6vh, 4.5rem) 0 clamp(3rem, 8vh, 5rem);
+}
+
+@media (min-width: 992px) {
+  .hero {
+    grid-template-columns: 55fr 45fr;
+    gap: 3rem;
+  }
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--parking-accent);
+  margin-bottom: 1rem;
+}
+
+.hero-eyebrow::before {
+  content: "";
+  width: 1.5rem;
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--parking-accent);
+}
+
+.hero-title {
+  font-size: clamp(2.35rem, 5vw, 3.6rem);
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.hero-text {
+  margin-top: 1.15rem;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--parking-muted);
+  max-width: 46ch;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+/* Grille des 6 modules */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 576px) {
+  .module-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .module-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.module-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.05rem;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  box-shadow: var(--parking-shadow-sm);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.module-card:hover {
+  border-color: var(--parking-accent-border);
+  transform: translateY(-2px);
+}
+
+.module-card-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.65rem;
+  background-color: var(--parking-accent-soft);
+  color: var(--parking-accent);
+  font-size: 1.05rem;
+}
+
+.module-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.module-card-desc {
+  font-size: 0.8rem;
+  color: var(--parking-muted);
+  line-height: 1.45;
+}
+
+/* Bande de fonctionnalités */
+.feature-band {
+  background-color: var(--parking-band);
+  border-block: 1px solid var(--parking-border);
+  padding: clamp(3rem, 7vh, 4.5rem) 0;
+  margin-top: 1rem;
+}
+
+.feature-band-inner {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .feature-band-inner {
+    padding-inline: 1.75rem;
+  }
+}
+
+.feature-band-head {
+  max-width: 46rem;
+  margin-bottom: 2.25rem;
+}
+
+.feature-band-title {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.feature-band-sub {
+  margin: 0.6rem 0 0;
+  color: var(--parking-muted);
+  font-size: 1rem;
+}
+
+.feature-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.feature-item {
+  padding: 1.35rem 1.4rem;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+}
+
+.feature-item-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.7rem;
+  background-color: var(--parking-accent-soft);
+  color: var(--parking-accent);
+  font-size: 1.2rem;
+  margin-bottom: 0.9rem;
+}
+
+.feature-item-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+.feature-item-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--parking-muted);
+  line-height: 1.55;
+}
+
+/* Pied de page minimal */
+.landing-footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--parking-border);
+  background-color: var(--parking-band);
+}
+
+.landing-footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 1.5rem 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .landing-footer-inner {
+    padding-inline: 1.75rem;
+  }
+}
+
+.landing-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 800;
+  color: var(--parking-text);
+  text-decoration: none;
+}
+
+.landing-footer-note {
+  font-size: 0.8375rem;
+  color: var(--parking-muted);
+}
+
+/* Illustration du héros (SVG inline, flottement lent) */
+.hero-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-visual svg {
+  width: 100%;
+  max-width: 30rem;
+  height: auto;
+  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.45));
+}
+
+.float-slow {
+  animation: float-slow 6s var(--ease-out) infinite alternate;
+}
+
+@keyframes float-slow {
+  from {
+    transform: translateY(-10px);
+  }
+  to {
+    transform: translateY(10px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   17. Visuels — images p1 (panneau de connexion), p2 (en-têtes de page)
+   -------------------------------------------------------------------------- */
+.page-illustration {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  flex-shrink: 0;
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-sm);
+}
+
+/* --------------------------------------------------------------------------
+   18. Animations
+   Seules transform et opacity sont animées (jamais width / height / top /
+   left), à l'exception du remplissage ponctuel de la barre d'occupation.
+   Tout est neutralisé dans le bloc prefers-reduced-motion de la section 15,
+   et animations.js affiche les valeurs finales si l'option est active.
+   ========================================================================== */
+
+/* --- a) Entrée de page & cascade (décalage --i, 60 ms/élément, max 12) --- */
+.page-enter {
+  animation: page-enter var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-item {
+  animation: stagger-in var(--dur-base) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* Les lignes de tableau ne se déplacent pas : fondu seul */
+.table tbody tr.stagger-item {
+  animation-name: stagger-fade;
+}
+
+@keyframes stagger-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes stagger-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* --- b) Révélation au scroll (classe .reveal + IntersectionObserver) --- */
+.reveal {
+  transition: opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+:where(html.anim-js) .reveal:not(.is-visible) {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+:where(html.anim-js) .reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* --- c) Compteurs : géré par animations.js (easeOutCubic, 1,2 s) --- */
+
+/* --- d) Barre d'occupation : remplissage fluide + reflet en boucle --- */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar.is-primed {
+  width: 0 !important;
+  transition: none !important;
+}
+
+.progress-bar.is-filling {
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    var(--parking-shine) 50%,
+    transparent 80%
+  );
+  transform: translateX(-160%) skewX(-14deg);
+  animation: bar-shine 3.4s var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+@keyframes bar-shine {
+  0% {
+    transform: translateX(-160%) skewX(-14deg);
+  }
+  55%,
+  100% {
+    transform: translateX(340%) skewX(-14deg);
+  }
+}
+
+/* --- e) Cartes : élévation au survol + chevron des accès rapides --- */
+.card {
+  transition: transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--parking-shadow);
+}
+
+.quick-action {
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.quick-action:hover {
+  transform: translateY(-2px);
+}
+
+.quick-action i {
+  display: inline-block;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.quick-action:hover i:last-child {
+  transform: translateX(4px);
+}
+
+/* --- f) Boutons : pression, brillance au survol, icône qui bouge --- */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 25%,
+    var(--parking-btn-shine) 50%,
+    transparent 75%
+  );
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.btn:hover::after {
+  animation: btn-shine 0.7s var(--ease-out);
+}
+
+@keyframes btn-shine {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn i {
+  display: inline-block;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover i {
+  transform: translateX(3px);
+}
+
+/* --- g) Navigation : icône qui pivote, halo de la barre active (voir 10) --- */
+.nav-pill-link i,
+.drawer-link i {
+  display: inline-block;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.nav-pill-link:hover i,
+.drawer-link:hover i {
+  transform: rotate(-8deg);
+}
+
+/* --- h) Pastilles d'indicateurs : halo pulsé (plus marqué sur « libres ») --- */
+.metric-card .metric-dot {
+  position: relative;
+  --dot-pulse-opacity: 0.35;
+  --dot-pulse-duration: 2.6s;
+}
+
+.metric-card .metric-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid currentcolor;
+  border-radius: inherit;
+  opacity: 0;
+  animation: dot-pulse var(--dot-pulse-duration) var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+.metric-card .metric-dot--success {
+  --dot-pulse-opacity: 0.6;
+  --dot-pulse-duration: 1.8s;
+}
+
+@keyframes dot-pulse {
+  0% {
+    transform: scale(1);
+    opacity: var(--dot-pulse-opacity);
+  }
+  70%,
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+/* --- i) Marque : flottement lent --- */
+.auth-brand-mark {
+  animation: brand-float 4s var(--ease-out) infinite alternate;
+}
+
+@keyframes brand-float {
+  from {
+    transform: translateY(-3px);
+  }
+  to {
+    transform: translateY(3px);
+  }
+}
+
+/* --- k) Formulaires : halo de focus animé, entrée des alertes/erreurs --- */
+.form-control:focus,
+.form-select:focus {
+  animation: focus-halo var(--dur-base) var(--ease-out);
+}
+
+@keyframes focus-halo {
+  from {
+    box-shadow: 0 0 0 0 rgba(var(--parking-accent-rgb), 0.3);
+  }
+  to {
+    box-shadow: 0 0 0 0.2rem rgba(var(--parking-accent-rgb), 0.16);
+  }
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  animation: none;
+}
+
+.alert {
+  animation: alert-in var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes alert-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.alert-danger,
+.form-error-summary {
+  animation: shake-in var(--dur-base) var(--ease-out) both;
+}
+
+@keyframes shake-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  45% {
+    opacity: 1;
+    transform: translateX(5px);
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- l) Tableaux : survol qui s'estompe, badges en « pop » --- */
+.table > tbody > tr > * {
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.badge {
+  animation: badge-pop var(--dur-base) var(--ease-out) backwards;
+}
+
+@keyframes badge-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --- m) Plan du parking : survol amplifié + pulsation des places libres --- */
+.parking-slot {
+  position: relative;
+}
+
+.parking-slot:hover,
+.parking-slot:focus-visible {
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: var(--parking-shadow);
+  border-color: var(--parking-border-strong);
+  transition: transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.parking-slot--libre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--parking-success);
+  border-radius: inherit;
+  opacity: 0.25;
+  animation: slot-pulse 3.2s var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+@keyframes slot-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.02);
+  }
+}
+
+/* --- n) Transition entre pages (classe posée par animations.js) --- */
+body.page-leaving {
+  opacity: 0;
+  transition: opacity 150ms var(--ease-out);
+}
+
+/* ==========================================================================
+   19. Modales CRUD, actions de ligne et alertes SweetAlert2
+   Les opérations (créer, modifier, supprimer, confirmer…) s'exécutent sans
+   quitter la liste : formulaire dans #crudModal, retours en alertes.
+   ========================================================================== */
+
+/* <button> reprenant la mise en forme des liens d'action */
+button.icon-btn {
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Le bouton de suppression est enveloppé d'un formulaire POST */
+.row-actions form {
+  display: inline-block;
+}
+
+/* Déconnexion : formulaire POST (CSRF) */
+.logout-form {
+  margin: 0;
+}
+
+/* --- Modale unique des formulaires --- */
+.modal-content {
+  background-color: var(--parking-surface);
+  color: var(--parking-text);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  box-shadow: var(--parking-shadow);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--parking-border);
+}
+
+.modal-title {
+  color: var(--parking-text);
+}
+
+.modal-backdrop.show {
+  opacity: 0.45;
+}
+
+#crudModal .modal-body form .form-actions {
+  margin-top: 0.5rem;
+}
+
+/* --- Récapitulatif de facturation --- */
+.crud-report {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  text-align: left;
+}
+
+.crud-report-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.55rem 0.75rem;
+  background-color: var(--parking-surface-2);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-sm);
+}
+
+.crud-report dt {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--parking-muted);
+}
+
+.crud-report dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--parking-text);
+  white-space: pre-line;
+}
+
+/* --- SweetAlert2 habillé aux couleurs du thème (clair ET sombre) --- */
+.swal2-popup {
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius);
+  box-shadow: var(--parking-shadow);
+  color: var(--parking-text);
+}
+
+.swal2-title {
+  color: var(--parking-text);
+}
+
+.swal2-html-container {
+  color: var(--parking-muted);
+}
+
+.swal2-confirm {
+  background-color: var(--parking-accent) !important;
+  color: var(--parking-accent-contrast) !important;
+}
+
+.swal2-cancel {
+  background-color: var(--parking-surface-2) !important;
+  border: 1px solid var(--parking-border-strong) !important;
+  color: var(--parking-text) !important;
+}
+
+.swal2-input,
+.swal2-textarea,
+.swal2-select {
+  background-color: var(--parking-surface);
+  color: var(--parking-text);
+  border: 1px solid var(--parking-border-strong);
+}
+
+.swal2-input:focus,
+.swal2-textarea:focus {
+  border-color: var(--parking-accent);
+  box-shadow: 0 0 0 0.2rem rgba(var(--parking-accent-rgb), 0.16);
+}
+
+.swal2-toast {
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border);
+  box-shadow: var(--parking-shadow);
+  color: var(--parking-text);
+}
+
+.swal2-timer-progress-bar {
+  background-color: var(--parking-accent) !important;
+}
+
+/* ==========================================================================
+   20. Mode clair — data-bs-theme="light" sur <html>
+   Le sombre est le défaut (:root) ; ce bloc redéfinit TOUTES les variables
+   --parking-* pour basculer l'interface complète en mode clair.
+   ========================================================================== */
+[data-bs-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --parking-bg: #f4f7ff;
+  --parking-band: #eaf0ff;
+  --parking-surface: #ffffff;
+  --parking-surface-2: #eef3ff;
+  --parking-topbar-bg: rgba(255, 255, 255, 0.85);
+
+  /* Texte (AA vérifié : 15,3:1 sur blanc, 14,7:1 sur --parking-bg) */
+  --parking-text: #0b1b3a;
+  --parking-muted: #4b5d7e;
+  --parking-border: rgba(11, 27, 58, 0.1);
+  --parking-border-strong: rgba(11, 27, 58, 0.22);
+  --parking-placeholder: #6b7d9e;
+
+  /* Accent (bleu assombri pour l'AA sur fonds clairs) */
+  --parking-accent: #1d4ed8;
+  --parking-accent-hover: #1e40af;
+  --parking-accent-soft: rgba(29, 78, 216, 0.1);
+  --parking-accent-border: rgba(29, 78, 216, 0.3);
+  --parking-accent-contrast: #ffffff;
+  --parking-accent-rgb: 29, 78, 216;
+  --parking-glow: rgba(29, 78, 216, 0.25);
+  --parking-on-filled: #ffffff;
+
+  /* Statuts — teintes foncées lisibles sur fonds « soft » clairs (AA ≥ 4.5) */
+  --status-free: #0369a1;
+  --status-busy: #b91c1c;
+  --status-booked: #92400e;
+  --status-off: #475569;
+  --status-free-soft: rgba(3, 105, 161, 0.1);
+  --status-busy-soft: rgba(185, 28, 28, 0.09);
+  --status-booked-soft: rgba(146, 64, 14, 0.1);
+  --status-off-soft: rgba(71, 85, 105, 0.11);
+  --status-free-border: rgba(3, 105, 161, 0.28);
+  --status-busy-border: rgba(185, 28, 28, 0.26);
+  --status-booked-border: rgba(146, 64, 14, 0.28);
+  --status-off-border: rgba(71, 85, 105, 0.28);
+
+  /* Sémantique — redirigée vers les statuts */
+  --parking-success: var(--status-free);
+  --parking-success-soft: var(--status-free-soft);
+  --parking-success-border: var(--status-free-border);
+  --parking-success-hover: #075985;
+  --parking-danger: var(--status-busy);
+  --parking-danger-soft: var(--status-busy-soft);
+  --parking-danger-border: var(--status-busy-border);
+  --parking-danger-hover: #991616;
+  --parking-warning: var(--status-booked);
+  --parking-warning-soft: var(--status-booked-soft);
+  --parking-warning-border: var(--status-booked-border);
+  --parking-info: #1e5f9e;
+  --parking-info-soft: rgba(30, 95, 158, 0.1);
+  --parking-info-border: rgba(30, 95, 158, 0.26);
+  --parking-success-rgb: 21, 128, 61;
+  --parking-danger-rgb: 185, 28, 28;
+
+  /* Pastilles de légende */
+  --parking-warning-dot: var(--status-booked);
+  --parking-muted-dot: var(--status-off);
+
+  /* Séries de graphiques — différenciées par la luminosité */
+  --chart-1: #2563eb;
+  --chart-2: #1e3a8a;
+  --chart-3: #0ea5e9;
+  --chart-4: rgba(37, 99, 235, 0.16);
+
+  /* Reflets */
+  --parking-shine: rgba(255, 255, 255, 0.55);
+  --parking-btn-shine: rgba(255, 255, 255, 0.45);
+  --parking-on-image: #ffffff;
+  --parking-scrim-rgb: 11, 27, 58;
+
+  /* Ombres */
+  --parking-shadow-sm: 0 1px 2px rgba(11, 27, 58, 0.06);
+  --parking-shadow: 0 16px 40px -22px rgba(11, 27, 58, 0.35);
+
+  /* Mappage Bootstrap */
+  --bs-primary-rgb: 37, 99, 235;
+  --bs-secondary: #4b5d7e;
+  --bs-secondary-rgb: 75, 93, 126;
+  --bs-success-rgb: 21, 128, 61;
+  --bs-danger-rgb: 185, 28, 28;
+  --bs-warning-rgb: 180, 83, 9;
+  --bs-info-rgb: 30, 95, 158;
+  --bs-light-rgb: 238, 243, 255;
+  --bs-dark-rgb: 11, 27, 58;
+  --bs-focus-ring-color: rgba(37, 99, 235, 0.3);
+  --bs-focus-ring-rgb: 37, 99, 235;
+
+  --bs-form-select-background-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%234b5d7e' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* Images de contenu : légèrement assombries dans le sombre pour ne pas briller */
+[data-bs-theme="dark"] .page-illustration {
+  filter: brightness(0.88) contrast(1.05);
+  background-color: var(--parking-surface-2);
+}
+
+/* ==========================================================================
+   21. Bascule de thème (bouton soleil / lune)
+   La classe .theme-anim est posée par theme.js uniquement lors d'un
+   changement explicite : les transitions restent donc neutres au repos.
+   ========================================================================== */
+.theme-toggle {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-sm);
+  background-color: var(--parking-surface);
+  color: var(--parking-text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) ease,
+    color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--parking-surface-2);
+  border-color: var(--parking-border-strong);
+  color: var(--parking-accent);
+}
+
+.theme-toggle i {
+  display: inline-block;
+  transition: transform 250ms var(--ease-out), opacity 250ms var(--ease-out);
+}
+
+/* Icone en cours de bascule : pivot + fondu */
+.theme-toggle.is-switching i {
+  transform: rotate(180deg);
+  opacity: 0;
+}
+
+/* Transition douce des surfaces lors d'un changement de thème */
+html.theme-anim body,
+html.theme-anim body::before,
+html.theme-anim .app-header,
+html.theme-anim .nav-pill,
+html.theme-anim .nav-pill-link,
+html.theme-anim .offcanvas.app-drawer,
+html.theme-anim .form-control,
+html.theme-anim .form-select,
+html.theme-anim .input-group-text,
+html.theme-anim .modal-content,
+html.theme-anim .dropdown-menu,
+html.theme-anim .table-responsive,
+html.theme-anim .filter-bar,
+html.theme-anim .icon-btn,
+html.theme-anim .alert,
+html.theme-anim .badge,
+html.theme-anim .parking-slot,
+html.theme-anim .status-tile,
+html.theme-anim .quick-action,
+html.theme-anim .drawer-link,
+html.theme-anim .page-link,
+html.theme-anim .app-brand-mark,
+html.theme-anim .app-user-avatar,
+html.theme-anim .theme-toggle,
+html.theme-anim .feature-item,
+html.theme-anim .module-card,
+html.theme-anim .landing-footer {
+  transition: background-color 250ms ease, color 250ms ease,
+    border-color 250ms ease;
+}
+
+html.theme-anim .card {
+  transition: background-color 250ms ease, color 250ms ease,
+    border-color 250ms ease, transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* « Réduire les animations » : aucune transition de bascule */
+@media (prefers-reduced-motion: reduce) {
+  html.theme-anim body,
+  html.theme-anim body::before,
+  html.theme-anim .card,
+  html.theme-anim .app-header,
+  html.theme-anim .nav-pill,
+  html.theme-anim .nav-pill-link,
+  html.theme-anim .offcanvas.app-drawer,
+  html.theme-anim .form-control,
+  html.theme-anim .form-select,
+  html.theme-anim .input-group-text,
+  html.theme-anim .modal-content,
+  html.theme-anim .dropdown-menu,
+  html.theme-anim .table-responsive,
+  html.theme-anim .filter-bar,
+  html.theme-anim .icon-btn,
+  html.theme-anim .alert,
+  html.theme-anim .badge,
+  html.theme-anim .parking-slot,
+  html.theme-anim .status-tile,
+  html.theme-anim .quick-action,
+  html.theme-anim .drawer-link,
+  html.theme-anim .page-link,
+  html.theme-anim .app-brand-mark,
+  html.theme-anim .app-user-avatar,
+  html.theme-anim .theme-toggle,
+  .theme-toggle i {
+    transition: none !important;
+  }
+
+  .theme-toggle.is-switching i {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   Tableau de bord /accueil — bannière compacte, KPI, graphiques, mini-plan
+   groupé, listes, occupation par zone, projecteur de carte, squelettes.
+   ========================================================================== */
+
+/* --- Bannière compacte (hero ≤ 170 px desktop / 140 px mobile) --- */
+.dash-banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  overflow: hidden;
+  padding: 0;
+  min-height: 170px;
+}
+
+.dash-banner-body {
+  padding: 1.35rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.dash-banner .page-title {
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+}
+
+.dash-banner .page-subtitle {
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* Titre : espace franc avant le mot en emphase (évite « parking,sous ») */
+.dash-banner .page-title .hl {
+  margin-inline-start: 0.18em;
+}
+
+.dash-banner-media {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* Photo : fondu au bord gauche (pas de coupure nette), teinte bleue */
+.dash-banner-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 55%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 55%);
+  filter: brightness(0.7) saturate(0.9);
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dash-banner-media img {
+    animation: dash-zoom 20s var(--ease-out) infinite alternate;
+  }
+}
+
+@keyframes dash-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+[data-bs-theme="light"] .dash-banner-media img {
+  filter: brightness(0.92) saturate(0.95);
+}
+
+@media (max-width: 991.98px) {
+  .dash-banner {
+    grid-template-columns: 1fr;
+    min-height: 140px;
+  }
+
+  .dash-banner-media {
+    display: none;
+  }
+}
+
+/* --- Badge « En direct · il y a Xs » --- */
+.dash-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-pill);
+  background-color: var(--parking-surface-2);
+  color: var(--parking-muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.dash-live.is-offline {
+  border-color: var(--status-booked-border);
+  color: var(--status-booked);
+}
+
+.dash-live-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: var(--parking-accent);
+  box-shadow: 0 0 0 0 var(--parking-accent-soft);
+  animation: dash-pulse 2.4s var(--ease-out) infinite;
+  flex-shrink: 0;
+}
+
+.dash-live.is-offline .dash-live-dot,
+.dash-live.is-paused .dash-live-dot {
+  background-color: var(--status-booked);
+  animation: none;
+}
+
+@keyframes dash-pulse {
+  0% { box-shadow: 0 0 0 0 var(--parking-accent-soft); }
+  70% { box-shadow: 0 0 0 0.4rem transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* --- Cartes indicateur : structure uniforme, lien poussé en bas --- */
+.metric-card .card-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.metric-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Toutes les tuiles d'icônes sont bleues ; la couleur de statut vit
+   uniquement dans le petit point de tendance ou un badge. */
+.metric-tile {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--parking-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  background-color: var(--parking-accent-soft);
+  color: var(--parking-accent);
+}
+
+.metric-value {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 0.65rem 0 0;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ligne de variation : flèche + valeur, jamais la couleur seule */
+.metric-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--parking-muted);
+  min-height: 1.25rem;
+}
+
+.metric-trend.is-up { color: var(--status-free); }
+.metric-trend.is-down { color: var(--status-busy); }
+.metric-trend.is-flat { color: var(--parking-muted); }
+
+/* Flash discret quand une valeur change (piloté par dashboard.js) */
+.metric-flash {
+  animation: metric-flash 800ms var(--ease-out);
+  border-radius: 0.4rem;
+}
+
+@keyframes metric-flash {
+  0% { background-color: var(--parking-accent-soft); }
+  100% { background-color: transparent; }
+}
+
+/* Lien « Voir … » aligné en bas quelle que soit la hauteur de la carte */
+.metric-card .metric-link {
+  margin-top: auto;
+  padding-top: 0.9rem;
+}
+
+.metric-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--parking-accent);
+  text-decoration: none;
+}
+
+.metric-link:hover {
+  color: var(--parking-accent-hover);
+  text-decoration: underline;
+}
+
+/* --- Projecteur de carte (curseur) : appareils à souris uniquement --- */
+@media (hover: hover) and (pointer: fine) {
+  .dash-glow {
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out);
+  }
+
+  .dash-glow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur-base) var(--ease-out);
+    background: radial-gradient(
+      26rem 18rem at var(--mx, 50%) var(--my, -20%),
+      var(--parking-glow),
+      transparent 62%
+    );
+  }
+
+  .dash-glow:hover {
+    transform: translateY(-3px);
+    border-color: var(--parking-accent-border);
+    box-shadow: var(--parking-shadow);
+  }
+
+  .dash-glow:hover::after {
+    opacity: 0.55;
+  }
+}
+
+/* --- Sparklines des cartes indicateur --- */
+.dash-spark {
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin-top: 0.65rem;
+}
+
+.dash-spark[hidden] {
+  display: none;
+}
+
+/* Réservé (même hauteur) pour que les liens restent alignés */
+.dash-spark-slot {
+  height: 28px;
+  margin-top: 0.65rem;
+}
+
+/* --- Graphiques --- */
+.dash-chart {
+  position: relative;
+  height: 260px;
+}
+
+.dash-chart--donut {
+  height: 190px;
+}
+
+.dash-chart--area {
+  flex: 1 1 auto;
+  min-height: 140px;
+}
+
+.dash-donut-wrap {
+  position: relative;
+  height: 200px;
+}
+
+.dash-donut-wrap[hidden] {
+  display: none !important;
+}
+
+.dash-donut-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dash-donut-value {
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--parking-text);
+  line-height: 1;
+}
+
+.dash-donut-caption {
+  font-size: 0.75rem;
+  color: var(--parking-muted);
+  margin-top: 0.15rem;
+}
+
+/* --- Légendes colorées (pastilles aux couleurs EXACTES des séries) --- */
+.legend-dot--chart1 { background-color: var(--chart-1) !important; }
+.legend-dot--chart2 { background-color: var(--chart-2) !important; }
+.legend-dot--chart3 { background-color: var(--chart-3) !important; }
+.legend-dot--accent { background-color: var(--parking-accent) !important; }
+.legend-dot--info { background-color: var(--parking-info) !important; }
+.legend-dot--free { background-color: var(--status-free) !important; }
+.legend-dot--busy { background-color: var(--status-busy) !important; }
+.legend-dot--booked { background-color: var(--status-booked) !important; }
+.legend-dot--off { background-color: var(--status-off) !important; }
+
+/* --- Légende filtrante du mini-plan (boutons) --- */
+.legend-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.legend-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-pill);
+  background-color: var(--parking-surface-2);
+  color: var(--parking-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.legend-filter-btn:hover {
+  color: var(--parking-text);
+  border-color: var(--parking-border-strong);
+}
+
+.legend-filter-btn[aria-pressed="true"] {
+  border-color: var(--parking-accent-border);
+  background-color: var(--parking-accent-soft);
+  color: var(--parking-text);
+}
+
+/* --- Liste de statistiques (réservations / abonnements) --- */
+.dash-stats-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  font-size: 0.875rem;
+  color: var(--parking-muted);
+}
+
+.dash-stats-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.dash-stats-list li strong {
+  margin-left: auto;
+  color: var(--parking-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-stats-list-sep {
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--parking-border);
+}
+
+/* --- Revenus : montants + courbe d'aire qui occupe l'espace restant --- */
+.dash-revenus {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.dash-revenu .metric-label {
+  margin-bottom: 0.2rem;
+}
+
+.dash-revenu .metric-value {
+  font-size: 1.15rem;
+  margin-top: 0;
+}
+
+.dash-amount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.card-body.dash-revenus-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Mini-plan groupé par zone --- */
+.dash-mini-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.dash-mini-zone-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--parking-muted);
+  margin: 0 0 0.45rem;
+}
+
+.dash-mini-zone-title .dash-mini-count {
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--parking-muted);
+}
+
+.dash-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 0.5rem;
+}
+
+.parking-slot--mini {
+  min-height: 3.4rem;
+  padding: 0.4rem 0.5rem;
+  gap: 0.1rem;
+  align-items: center;
+  text-align: center;
+  /* cascade ≤ 400 ms au chargement (délai posé par dashboard.js) */
+  animation: slot-in var(--dur-base) var(--ease-out) backwards;
+}
+
+@keyframes slot-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.parking-slot--mini .slot-number {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.parking-slot--mini .mini-letter {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.parking-slot--mini.parking-slot--libre .mini-letter { color: var(--status-free); }
+.parking-slot--mini.parking-slot--occupee .mini-letter { color: var(--status-busy); }
+.parking-slot--mini.parking-slot--reservee .mini-letter { color: var(--status-booked); }
+.parking-slot--mini.parking-slot--hors-service .mini-letter { color: var(--status-off); }
+
+.parking-slot--mini[hidden] {
+  display: none !important;
+}
+
+/* Flash quand un statut change (piloté par dashboard.js) */
+.parking-slot--mini.slot-flash {
+  animation: slot-flash 700ms var(--ease-out);
+}
+
+@keyframes slot-flash {
+  0% { box-shadow: 0 0 0 3px var(--parking-accent-soft); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* --- Listes d'activité --- */
+.dash-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0;
+  min-height: 44px;
+  border-bottom: 1px solid var(--parking-border);
+}
+
+.dash-list-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.dash-list-row:first-child {
+  padding-top: 0;
+}
+
+.dash-list-icon {
+  flex-shrink: 0;
+}
+
+.dash-list-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.dash-list-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--parking-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-list-sub {
+  font-size: 0.8rem;
+  color: var(--parking-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-list-link {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.7rem 0.5rem;
+  margin-inline: -0.5rem;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--parking-border);
+  border-radius: var(--parking-radius-sm);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.dash-list-link:hover {
+  background-color: var(--parking-surface-2);
+  color: inherit;
+}
+
+.dash-list-link:last-child {
+  border-bottom: 0;
+}
+
+/* --- Occupation par zone : rangées aérées, seuils de couleur --- */
+.dash-zones-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dash-zones-list {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.95rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dash-zone-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.dash-zone-name {
+  min-width: 6.5rem;
+  color: var(--parking-text);
+  font-weight: 600;
+}
+
+.dash-zone-bar {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: var(--parking-radius-pill);
+  background-color: var(--parking-border);
+  overflow: hidden;
+}
+
+.dash-zone-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--parking-radius-pill);
+  background-color: var(--chart-1);
+  transition: width var(--dur-base) var(--ease-out);
+}
+
+/* Seuils : < 80 % bleu, 80–94 % orange, ≥ 95 % rouge */
+.dash-zone-fill.is-warn { background-color: var(--status-booked); }
+.dash-zone-fill.is-crit { background-color: var(--status-busy); }
+
+.dash-zone-count {
+  min-width: 4.5rem;
+  text-align: end;
+  color: var(--parking-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dash-zone-count strong {
+  color: var(--parking-text);
+}
+
+/* --- Accès rapide : rangée à hauteurs égales --- */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.quick-grid .quick-action {
+  height: 100%;
+  margin-top: 0;
+}
+
+/* --- Squelettes (shimmer) pendant le premier chargement --- */
+.dash-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--parking-surface-2);
+  border-radius: var(--parking-radius-sm);
+}
+
+.dash-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--parking-accent-soft),
+    transparent
+  );
+  animation: shimmer 1.4s var(--ease-out) infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* --- Aide des raccourcis clavier (#aideRaccourcis) --- */
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--parking-border);
+}
+
+.shortcut-row:last-child {
+  border-bottom: 0;
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--parking-border-strong);
+  border-radius: 0.4rem;
+  background-color: var(--parking-surface-2);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--parking-text);
+}
+
+/* --- États vides illustrés --- */
+[data-dash-empty] img {
+  width: 140px;
+  height: auto;
+  border-radius: var(--parking-radius-sm);
+  opacity: 0.9;
+}
+
+/* --- Accessibilité : mouvement réduit --- */
+@media (prefers-reduced-motion: reduce) {
+  .dash-live-dot {
+    animation: none;
+  }
+
+  .dash-zone-fill {
+    transition: none;
+  }
+
+  .dash-banner-media img {
+    animation: none;
+  }
+
+  .parking-slot--mini {
+    animation: none;
+  }
+
+  .parking-slot--mini.slot-flash {
+    animation: none;
+  }
+
+  .metric-flash {
+    animation: none;
+  }
+
+  .dash-skeleton::after {
+    animation: none;
+  }
+
+  .dash-glow:hover {
+    transform: none;
+  }
+}

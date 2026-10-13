@@ -1,19 +1,77 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
 <body>
-<div th:fragment="pageContent">
-    <h2 class="mb-4"><i class="fas fa-id-card"></i> Nouvel abonnement</h2>
-    <div class="card"><div class="card-body">
-        <form th:action="@{/abonnements/sauvegarder}" th:object="${abonnement}" method="post" class="row g-3">
-            <div class="col-md-6"><label class="form-label">Utilisateur *</label><select class="form-select" th:field="*{utilisateurId}" th:classappend="${#fields.hasErrors('utilisateurId')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="u : ${utilisateurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('utilisateurId')}" th:errors="*{utilisateurId}"></div></div>
-            <div class="col-md-6"><label class="form-label">Véhicule *</label><select class="form-select" th:field="*{vehiculeId}" th:classappend="${#fields.hasErrors('vehiculeId')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="v : ${vehicules}" th:value="${v.id}" th:text="${v.immatriculation + ' - ' + v.marque}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('vehiculeId')}" th:errors="*{vehiculeId}"></div></div>
-            <div class="col-md-4"><label class="form-label">Type *</label><select class="form-select" th:field="*{type}" th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="t : ${typesAbonnement}" th:value="${t}" th:text="${t}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div></div>
-            <div class="col-md-4"><label class="form-label">Date début *</label><input type="date" class="form-control" th:field="*{dateDebut}" th:classappend="${#fields.hasErrors('dateDebut')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('dateDebut')}" th:errors="*{dateDebut}"></div></div>
-            <div class="col-md-4"><label class="form-label">Date fin *</label><input type="date" class="form-control" th:field="*{dateFin}" th:classappend="${#fields.hasErrors('dateFin')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('dateFin')}" th:errors="*{dateFin}"></div></div>
-            <div class="col-md-4"><label class="form-label">Prix (Ar) *</label><input type="number" step="0.01" class="form-control" th:field="*{prix}" th:classappend="${#fields.hasErrors('prix')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('prix')}" th:errors="*{prix}"></div></div>
-            <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Créer</button> <a th:href="@{/abonnements}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
-        </form>
-    </div></div>
+<div th:fragment="pageContent" class="page-enter">
+
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Abonnements</p>
+            <h1 class="page-title">Nouvel abonnement</h1>
+            <p class="page-subtitle">Attribuez un abonnement à un utilisateur et à son véhicule.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/abonnements}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour à la liste
+            </a>
+        </div>
+    </header>
+
+    <section class="card">
+        <div class="card-body">
+            <form th:fragment="formContent" th:action="@{/abonnements/sauvegarder}" th:object="${abonnement}" method="post" class="row g-3">
+                <div class="col-12 alert alert-danger form-error-summary" role="alert" th:if="${#fields.hasAnyErrors()}">
+                    <strong>Veuillez corriger les champs signalés ci-dessous.</strong>
+                    <ul>
+                        <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="utilisateurId">Utilisateur *</label>
+                    <select class="form-select" id="utilisateurId" th:field="*{utilisateurId}" th:classappend="${#fields.hasErrors('utilisateurId')} ? 'is-invalid'">
+                        <option value="">-- Sélectionner --</option>
+                        <option th:each="u : ${utilisateurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom}"></option>
+                    </select>
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('utilisateurId')}" th:errors="*{utilisateurId}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="vehiculeId">Véhicule *</label>
+                    <select class="form-select" id="vehiculeId" th:field="*{vehiculeId}" th:classappend="${#fields.hasErrors('vehiculeId')} ? 'is-invalid'">
+                        <option value="">-- Sélectionner --</option>
+                        <option th:each="v : ${vehicules}" th:value="${v.id}" th:text="${v.immatriculation + ' - ' + v.marque}"></option>
+                    </select>
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('vehiculeId')}" th:errors="*{vehiculeId}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="type">Type *</label>
+                    <select class="form-select" id="type" th:field="*{type}" th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'">
+                        <option value="">-- Sélectionner --</option>
+                        <option th:each="t : ${typesAbonnement}" th:value="${t}" th:text="${t}"></option>
+                    </select>
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="dateDebut">Date début *</label>
+                    <input type="date" class="form-control" id="dateDebut" th:field="*{dateDebut}" th:classappend="${#fields.hasErrors('dateDebut')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('dateDebut')}" th:errors="*{dateDebut}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="dateFin">Date fin *</label>
+                    <input type="date" class="form-control" id="dateFin" th:field="*{dateFin}" th:classappend="${#fields.hasErrors('dateFin')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('dateFin')}" th:errors="*{dateFin}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="prix">Prix (Ar) *</label>
+                    <input type="number" step="0.01" class="form-control" id="prix" th:field="*{prix}" th:classappend="${#fields.hasErrors('prix')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('prix')}" th:errors="*{prix}"></div>
+                </div>
+                <div class="col-12 form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy" aria-hidden="true"></i>Créer</button>
+                    <a th:href="@{/abonnements}" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Annuler</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
 </div>
 </body>
 </html>

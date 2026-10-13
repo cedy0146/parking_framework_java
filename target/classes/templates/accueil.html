@@ -1,14 +1,489 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
 <body>
-<div th:fragment="pageContent" class="page-enter" th:with="libres=${placesLibres != null ? placesLibres : 0}, occupees=${placesOccupees != null ? placesOccupees : 0}, total=${libres + occupees}, occupation=${total > 0 ? (occupees * 100 / total) : 0}">
-    <section class="dashboard-hero rounded-4 p-4 p-lg-5 mb-4" aria-labelledby="dashboard-title"><div class="row align-items-center g-4 position-relative"><div class="col-lg-8"><p class="text-white-50 text-uppercase small fw-semibold mb-2"><i class="bi bi-geo-alt-fill me-1" aria-hidden="true"></i>ParkFlow · Vue en direct</p><h1 class="display-6 fw-semibold mb-2" id="dashboard-title">Votre parking, sous contrôle.</h1><p class="text-white-50 fs-5 mb-4">Consultez les disponibilités et agissez rapidement sur les mouvements du jour.</p><div class="d-flex flex-wrap gap-2"><a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties/nouveau}" class="btn hero-action"><i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Enregistrer une entrée</a><a sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations/nouveau}" class="btn btn-outline-light"><i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>Nouvelle réservation</a></div></div><div class="col-lg-4"><div class="hero-availability rounded-4 p-4 text-center"><p class="text-white-50 text-uppercase small fw-semibold mb-2">Places disponibles</p><p class="hero-availability-number fw-bold mb-1" th:text="${libres}">0</p><p class="mb-0 text-white-50">sur <span th:text="${total}">0</span> places suivies</p></div></div></div></section>
-    <section class="row g-3 g-lg-4 mb-4" aria-label="Indicateurs de parking">
-        <div class="col-sm-6 col-xl-3"><article class="card dashboard-card metric-card--success h-100"><div class="card-body d-flex gap-3"><span class="metric-icon rounded-3 bg-success-subtle text-success d-inline-flex align-items-center justify-content-center fs-4"><i class="bi bi-p-circle-fill" aria-hidden="true"></i></span><div><p class="text-body-secondary small fw-semibold text-uppercase mb-1">Places libres</p><p class="display-6 fw-semibold lh-1 mb-2" th:text="${libres}">0</p><a th:href="@{/places?statut=LIBRE}" class="link-success small fw-semibold stretched-link">Voir les places <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></div></article></div>
-        <div class="col-sm-6 col-xl-3"><article class="card dashboard-card metric-card--danger h-100"><div class="card-body d-flex gap-3"><span class="metric-icon rounded-3 bg-danger-subtle text-danger d-inline-flex align-items-center justify-content-center fs-4"><i class="bi bi-car-front-fill" aria-hidden="true"></i></span><div><p class="text-body-secondary small fw-semibold text-uppercase mb-1">Places occupées</p><p class="display-6 fw-semibold lh-1 mb-2" th:text="${occupees}">0</p><a th:href="@{/places?statut=OCCUPEE}" class="link-danger small fw-semibold stretched-link">Voir les places <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></div></article></div>
-        <div class="col-sm-6 col-xl-3"><article class="card dashboard-card metric-card--warning h-100"><div class="card-body d-flex gap-3"><span class="metric-icon rounded-3 bg-warning-subtle text-warning d-inline-flex align-items-center justify-content-center fs-4"><i class="bi bi-calendar-check-fill" aria-hidden="true"></i></span><div><p class="text-body-secondary small fw-semibold text-uppercase mb-1">Réservations actives</p><p class="display-6 fw-semibold lh-1 mb-2" th:text="${reservationsActives != null ? reservationsActives : 0}">0</p><a th:href="@{/reservations?statut=CONFIRMEE}" class="link-warning small fw-semibold stretched-link">Voir les réservations <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></div></article></div>
-        <div class="col-sm-6 col-xl-3"><article class="card dashboard-card metric-card--info h-100"><div class="card-body d-flex gap-3"><span class="metric-icon rounded-3 bg-info-subtle text-info d-inline-flex align-items-center justify-content-center fs-4"><i class="bi bi-clock-history" aria-hidden="true"></i></span><div><p class="text-body-secondary small fw-semibold text-uppercase mb-1">En stationnement</p><p class="display-6 fw-semibold lh-1 mb-2" th:text="${enStationnement != null ? enStationnement : 0}">0</p><a th:href="@{/entrees-sorties?enCours=true}" class="link-info small fw-semibold stretched-link">Voir les véhicules <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></div></article></div>
+<div th:fragment="pageContent" class="page-enter"
+     th:with="places=${stats.places()},
+               libres=${places.libres()},
+               occupees=${places.occupees()},
+               total=${places.total()},
+               taux=${places.tauxOccupation()},
+               varStationnement=${stats.mouvements().variationStationnement()},
+               varRevenus=${stats.revenus() != null ? stats.revenus().variationJour() : null}">
+
+    <!-- Bannière compacte (hero ≤ 170 px) -->
+    <section class="card dash-banner mb-4 reveal" aria-label="Présentation du tableau de bord">
+        <div class="dash-banner-body">
+            <p class="page-eyebrow">Tableau de bord</p>
+            <h1 class="page-title">Votre parking, <span class="hl">sous contrôle<svg class="hl-mark" viewBox="0 0 260 70" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="130" cy="35" rx="124" ry="30"></ellipse></svg></span>.</h1>
+            <p class="page-subtitle">Disponibilités en direct et actions les plus fréquentes.</p>
+            <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties/nouveau}" class="btn btn-primary" data-crud-open data-crud-title="Enregistrer une entrée" data-dash-action="entree">
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Enregistrer une entrée
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations/nouveau}" class="btn btn-outline-primary" data-crud-open data-crud-title="Nouvelle réservation">
+                    <i class="bi bi-calendar-plus" aria-hidden="true"></i>Nouvelle réservation
+                </a>
+                <span class="dash-live" data-dash-live role="status">
+                    <span class="dash-live-dot" aria-hidden="true"></span>
+                    <span data-dash-live-text>En direct</span>
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-dash-pause aria-pressed="false" title="Mettre le rafraîchissement automatique en pause">
+                    <i class="bi bi-pause-fill" aria-hidden="true"></i><span class="visually-hidden">Pause</span>
+                </button>
+            </div>
+        </div>
+        <div class="dash-banner-media" aria-hidden="true">
+            <img src="/img/p1.avif" alt="" width="740" height="493" fetchpriority="high" decoding="async">
+        </div>
     </section>
-    <section class="row g-3 g-lg-4"><div class="col-lg-7"><article class="card dashboard-card h-100"><div class="card-body p-4"><div class="d-flex justify-content-between align-items-start mb-4"><div><h2 class="h5 mb-1">Occupation actuelle</h2><p class="text-body-secondary small mb-0">Selon les places libres et occupées.</p></div><span class="badge text-bg-primary rounded-pill fs-6" th:text="${occupation + '%'}">0%</span></div><div class="progress mb-3" role="progressbar" aria-label="Taux d'occupation" th:aria-valuenow="${occupation}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar bg-primary" th:style="|width: ${occupation}%|" th:text="${occupation + '%'}">0%</div></div><div class="row text-center g-3"><div class="col-4 border-end"><p class="small text-body-secondary mb-1">Capacité suivie</p><p class="h5 mb-0" th:text="${total}">0</p></div><div class="col-4 border-end"><p class="small text-body-secondary mb-1">Disponibles</p><p class="h5 text-success mb-0" th:text="${libres}">0</p></div><div class="col-4"><p class="small text-body-secondary mb-1">Occupées</p><p class="h5 text-danger mb-0" th:text="${occupees}">0</p></div></div></div></article></div><div class="col-lg-5"><article class="card dashboard-card h-100"><div class="card-body p-4"><h2 class="h5 mb-1">Accès rapide</h2><p class="text-body-secondary small mb-3">Les actions les plus fréquentes.</p><div class="d-grid gap-2"><a th:href="@{/places/plan}" class="quick-action btn btn-outline-primary text-start d-flex align-items-center gap-3"><i class="bi bi-grid-3x3-gap-fill fs-4" aria-hidden="true"></i><span><span class="d-block fw-semibold">Plan du parking</span><small class="text-body-secondary">Visualiser toutes les places</small></span><i class="bi bi-chevron-right ms-auto" aria-hidden="true"></i></a><a th:href="@{/entrees-sorties}" class="quick-action btn btn-outline-secondary text-start d-flex align-items-center gap-3"><i class="bi bi-arrow-left-right fs-4" aria-hidden="true"></i><span><span class="d-block fw-semibold">Mouvements</span><small class="text-body-secondary">Consulter les entrées et sorties</small></span><i class="bi bi-chevron-right ms-auto" aria-hidden="true"></i></a></div></div></article></div></section>
+
+    <!-- Indicateurs (structure uniforme : libellé, chiffre, mini-courbe ou
+         emplacement réservé, variation, lien poussé en bas) -->
+    <section class="row g-3 g-lg-4 mb-4" aria-label="Indicateurs de parking">
+        <div class="col-sm-6 col-xl-3">
+            <article class="card metric-card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="metric-head">
+                        <p class="metric-label mb-0 d-inline-flex align-items-center gap-2">
+                            <span class="legend-dot legend-dot--free" aria-hidden="true"></span>Places libres
+                        </p>
+                        <span class="metric-tile" aria-hidden="true"><i class="bi bi-p-circle-fill"></i></span>
+                    </div>
+                    <p class="metric-value" data-dash="libres" data-count-to th:text="${libres}">0</p>
+                    <div class="dash-spark-slot" aria-hidden="true">
+                        <canvas class="dash-spark" data-spark="libres" hidden></canvas>
+                    </div>
+                    <p class="metric-trend" data-trend="libres" title="Depuis la dernière mise à jour"></p>
+                    <a th:href="@{/places?statut=LIBRE}" class="metric-link">Voir les places <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <article class="card metric-card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="metric-head">
+                        <p class="metric-label mb-0 d-inline-flex align-items-center gap-2">
+                            <span class="legend-dot legend-dot--busy" aria-hidden="true"></span>Places occupées
+                        </p>
+                        <span class="metric-tile" aria-hidden="true"><i class="bi bi-car-front-fill"></i></span>
+                    </div>
+                    <p class="metric-value" data-dash="occupees" data-count-to th:text="${occupees}">0</p>
+                    <div class="dash-spark-slot" aria-hidden="true">
+                        <canvas class="dash-spark" data-spark="occupees" hidden></canvas>
+                    </div>
+                    <p class="metric-trend" data-trend="occupees" title="Depuis la dernière mise à jour"></p>
+                    <a th:href="@{/places?statut=OCCUPEE}" class="metric-link">Voir les places <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <article class="card metric-card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="metric-head">
+                        <p class="metric-label mb-0 d-inline-flex align-items-center gap-2">
+                            <span class="legend-dot legend-dot--accent" aria-hidden="true"></span>Réservations actives
+                        </p>
+                        <span class="metric-tile" aria-hidden="true"><i class="bi bi-calendar-check-fill"></i></span>
+                    </div>
+                    <p class="metric-value" data-dash="reservations-actives" data-count-to th:text="${stats.reservations().confirmees()}">0</p>
+                    <div class="dash-spark-slot" aria-hidden="true">
+                        <canvas class="dash-spark" data-spark="reservations" hidden></canvas>
+                    </div>
+                    <p class="metric-trend" data-trend="reservations-actives" title="Depuis la dernière mise à jour"></p>
+                    <a th:href="@{/reservations?statut=CONFIRMEE}" class="metric-link">Voir les réservations <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <article class="card metric-card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="metric-head">
+                        <p class="metric-label mb-0 d-inline-flex align-items-center gap-2">
+                            <span class="legend-dot legend-dot--accent" aria-hidden="true"></span>En stationnement
+                        </p>
+                        <span class="metric-tile" aria-hidden="true"><i class="bi bi-clock-history"></i></span>
+                    </div>
+                    <p class="metric-value" data-dash="stationnement" data-count-to th:text="${stats.mouvements().enStationnement()}">0</p>
+                    <div class="dash-spark-slot" aria-hidden="true">
+                        <canvas class="dash-spark" data-spark="stationnement" hidden></canvas>
+                    </div>
+                    <p class="metric-trend" data-trend="stationnement" title="Par rapport à la veille"
+                       th:classappend="${varStationnement > 0 ? 'is-up' : (varStationnement < 0 ? 'is-down' : 'is-flat')}"
+                       th:text="${varStationnement > 0 ? '▲ +' + varStationnement + ' vs hier' : (varStationnement < 0 ? '▼ ' + varStationnement + ' vs hier' : '= vs hier')}"></p>
+                    <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties?enCours=true}" class="metric-link">Voir les véhicules <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Occupation + activité -->
+    <section class="row g-3 g-lg-4 mb-4">
+        <div class="col-lg-5">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body occupancy-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Occupation actuelle</h2>
+                            <p class="panel-subtitle">Répartition des places par statut.</p>
+                        </div>
+                        <span class="badge bg-primary" data-dash="taux"
+                              th:text="|${#numbers.formatDecimal(taux, 1, 'COMMA', 1, 'COMMA')} %|">0 %</span>
+                    </div>
+
+                    <div class="dash-donut-wrap mb-3 dash-skeleton" data-dash-occupation-chart>
+                        <canvas data-chart="occupation" role="img" aria-label="Répartition des places par statut"></canvas>
+                        <div class="dash-donut-center">
+                            <span class="dash-donut-value" data-dash="total" th:text="${total}">0</span>
+                            <span class="dash-donut-caption">places</span>
+                        </div>
+                    </div>
+                    <div class="empty-state" data-dash-empty="occupation" hidden>
+                        <img src="/img/p2.avif" alt="" width="140" height="140" decoding="async">
+                        <p class="h5 mt-2">Aucune place enregistrée</p>
+                        <p>Créez une place pour suivre l'occupation.</p>
+                    </div>
+
+                    <div class="summary-grid">
+                        <div>
+                            <p class="metric-label mb-1">Capacité</p>
+                            <p class="summary-value" data-dash="total-resume" th:text="${total}">0</p>
+                        </div>
+                        <div>
+                            <p class="metric-label mb-1">Disponibles</p>
+                            <p class="summary-value" data-dash="libres-resume" th:text="${libres}">0</p>
+                        </div>
+                        <div>
+                            <p class="metric-label mb-1">Occupées</p>
+                            <p class="summary-value" data-dash="occupees-resume" th:text="${occupees}">0</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-7">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Activité des 7 derniers jours</h2>
+                            <p class="panel-subtitle">Entrées et sorties par jour<span sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">, avec les revenus</span>. Cliquez sur la légende pour masquer une série.</p>
+                        </div>
+                    </div>
+                    <div class="dash-chart dash-skeleton">
+                        <canvas data-chart="activite" role="img" aria-label="Graphique des entrées et sorties des 7 derniers jours"></canvas>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Plan + zones -->
+    <section class="row g-3 g-lg-4 mb-4">
+        <div class="col-lg-7">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Plan du parking</h2>
+                            <p class="panel-subtitle">Aperçu des places et de leur statut.</p>
+                        </div>
+                        <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places/plan}" class="metric-link">Plan complet <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+
+                    <div class="legend-filter mb-3" role="group" aria-label="Filtrer le mini-plan par statut">
+                        <button type="button" class="legend-filter-btn" data-legend-filter="LIBRE" aria-pressed="false">
+                            <span class="legend-dot legend-dot--free" aria-hidden="true"></span>L — Libre
+                        </button>
+                        <button type="button" class="legend-filter-btn" data-legend-filter="OCCUPEE" aria-pressed="false">
+                            <span class="legend-dot legend-dot--busy" aria-hidden="true"></span>O — Occupée
+                        </button>
+                        <button type="button" class="legend-filter-btn" data-legend-filter="RESERVEE" aria-pressed="false">
+                            <span class="legend-dot legend-dot--booked" aria-hidden="true"></span>R — Réservée
+                        </button>
+                        <button type="button" class="legend-filter-btn" data-legend-filter="HORS_SERVICE" aria-pressed="false">
+                            <span class="legend-dot legend-dot--off" aria-hidden="true"></span>X — Hors service
+                        </button>
+                    </div>
+
+                    <div class="dash-mini-zones" data-dash-mini-plan aria-label="Aperçu des places par zone">
+                        <div class="dash-mini-zone" th:each="g : ${stats.planParZone()}" data-zone-group th:data-zone="${g.zone()}">
+                            <p class="dash-mini-zone-title">
+                                <span th:text="${g.libelle()}">Zone A</span>
+                                <span class="dash-mini-count" th:text="|· ${#lists.size(g.places())} places|">· 0 places</span>
+                            </p>
+                            <div class="dash-mini-grid">
+                                <a type="button" th:each="p : ${g.places()}" data-mini-slot
+                                   th:href="@{|/places/plan#place-${p.id()}|}"
+                                   th:data-place-id="${p.id()}" th:data-statut="${p.statut()}"
+                                   class="parking-slot parking-slot--mini"
+                                   data-bs-toggle="tooltip" data-bs-placement="top"
+                                   th:title="|${p.numero()} · ${p.zoneLibelle()} · ${p.typeLibelle()} · ${p.statutLibelle()}${p.immatriculation() != null ? ' · ' + p.immatriculation() : ''}|"
+                                   th:classappend="${p.statut() == 'LIBRE' ? 'parking-slot--libre' : (p.statut() == 'OCCUPEE' ? 'parking-slot--occupee' : (p.statut() == 'RESERVEE' ? 'parking-slot--reservee' : 'parking-slot--hors-service'))}">
+                                    <span class="slot-number" th:text="${p.numero()}">A01</span>
+                                    <span class="mini-letter" th:text="${p.lettre()}">L</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="empty-state" data-dash-empty="plan" th:if="${#lists.isEmpty(stats.planParZone())}">
+                        <img src="/img/p2.avif" alt="" width="140" height="140" decoding="async">
+                        <p class="h5 mt-2">Aucune place à afficher</p>
+                        <p>Créez une place pour la voir apparaître sur le plan.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-5">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body dash-zones-body">
+                    <h2 class="panel-title">Occupation par zone</h2>
+                    <p class="panel-subtitle">Part des places occupées, zone par zone.</p>
+                    <ul class="dash-zones-list mt-3 mb-0" data-dash-list="zones">
+                        <li class="dash-zone-row" th:each="z : ${stats.parZone()}"
+                            th:with="pct=${z.total() > 0 ? (z.occupees() * 100 / z.total()) : 0}">
+                            <span class="dash-zone-name" th:text="${z.libelle()}">Zone A</span>
+                            <span class="dash-zone-bar" aria-hidden="true">
+                                <span class="dash-zone-fill" th:classappend="${pct >= 95 ? 'is-crit' : (pct >= 80 ? 'is-warn' : '')}"
+                                       th:style="|width: ${pct}%|"></span>
+                            </span>
+                            <span class="dash-zone-count"><strong th:text="${z.occupees()}">0</strong>/<span th:text="${z.total()}">0</span> · <span th:text="|${pct} %|">0 %</span></span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" data-dash-empty="zones" th:if="${#lists.isEmpty(stats.parZone())}">
+                        <img src="/img/p2.avif" alt="" width="140" height="140" decoding="async">
+                        <p class="h5 mt-2">Aucune zone</p>
+                        <p>Les zones apparaîtront ici dès la création des places.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Revenus + réservations (+ accès rapide pour les utilisateurs) -->
+    <section class="row g-3 g-lg-4 mb-4">
+        <div class="col-lg-7" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" data-dash-revenus>
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body dash-revenus-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Revenus</h2>
+                            <p class="panel-subtitle">Montants encaissés (fermetures payées).</p>
+                        </div>
+                    </div>
+                    <div class="dash-revenus mb-3">
+                        <div class="dash-revenu">
+                            <p class="metric-label mb-1">Aujourd'hui</p>
+                            <p class="metric-value dash-amount" data-dash="rev-jour"
+                               th:text="${stats.revenus() != null ? @labels.montant(stats.revenus().jour()) : '—'}">—</p>
+                            <p class="metric-trend" data-trend="rev-jour" title="Par rapport à la veille"
+                               th:if="${varRevenus != null}"
+                               th:classappend="${varRevenus > 0 ? 'is-up' : (varRevenus < 0 ? 'is-down' : 'is-flat')}"
+                               th:text="${varRevenus > 0 ? '▲ +' + @labels.montant(varRevenus) + ' vs hier' : (varRevenus < 0 ? '▼ ' + @labels.montant(varRevenus) + ' vs hier' : '= vs hier')}"></p>
+                        </div>
+                        <div class="dash-revenu">
+                            <p class="metric-label mb-1">Ce mois</p>
+                            <p class="metric-value dash-amount" data-dash="rev-mois"
+                               th:text="${stats.revenus() != null ? @labels.montant(stats.revenus().mois()) : '—'}">—</p>
+                        </div>
+                        <div class="dash-revenu">
+                            <p class="metric-label mb-1">Moyenne / jour <span class="text-muted fw-normal">(30 j)</span></p>
+                            <p class="metric-value dash-amount" data-dash="rev-moyenne"
+                               th:text="${stats.revenus() != null ? @labels.montant(stats.revenus().moyenneJour30()) : '—'}">—</p>
+                        </div>
+                    </div>
+                    <div class="dash-chart dash-chart--area dash-skeleton">
+                        <canvas data-chart="revenus" role="img" aria-label="Revenus des 7 derniers jours"></canvas>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-5" th:classappend="${stats.revenus() == null ? 'col-lg-7' : ''}">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Réservations</h2>
+                            <p class="panel-subtitle">Répartition par statut et abonnements.</p>
+                        </div>
+                    </div>
+                    <div class="dash-donut-wrap mb-3 dash-skeleton" data-dash-reservations-chart>
+                        <canvas data-chart="reservations" role="img" aria-label="Répartition des réservations par statut"></canvas>
+                        <div class="dash-donut-center">
+                            <span class="dash-donut-value" data-dash="res-total"
+                                  th:text="${stats.reservations().enAttente() + stats.reservations().confirmees() + stats.reservations().annulees() + stats.reservations().terminees()}">0</span>
+                            <span class="dash-donut-caption">réservations</span>
+                        </div>
+                    </div>
+                    <ul class="dash-stats-list mb-0">
+                        <li><span class="legend-dot legend-dot--booked"></span>En attente <strong data-dash="res-attente" th:text="${stats.reservations().enAttente()}">0</strong></li>
+                        <li><span class="legend-dot legend-dot--accent"></span>Confirmées <strong data-dash="res-confirmees" th:text="${stats.reservations().confirmees()}">0</strong></li>
+                        <li><span class="legend-dot legend-dot--busy"></span>Annulées <strong data-dash="res-annulees" th:text="${stats.reservations().annulees()}">0</strong></li>
+                        <li><span class="legend-dot legend-dot--off"></span>Terminées <strong data-dash="res-terminees" th:text="${stats.reservations().terminees()}">0</strong></li>
+                        <li class="dash-stats-list-sep"><span class="legend-dot legend-dot--accent"></span>Abonnements actifs <strong data-dash="abo-actifs" th:text="${stats.abonnements().actifs()}">0</strong></li>
+                    </ul>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-7" th:if="${stats.revenus() == null}">
+            <article th:replace="~{::accesRapide}"></article>
+        </div>
+    </section>
+
+    <!-- Réservations récentes + mouvements (+ accès rapide en pleine largeur pour le personnel) -->
+    <section class="row g-3 g-lg-4">
+        <div class="col-lg-7" th:classappend="${stats.revenus() == null ? 'col-12' : ''}">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Dernières réservations</h2>
+                            <p class="panel-subtitle">Les cinq plus récentes.</p>
+                        </div>
+                        <a sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}" class="metric-link">Toutes <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+
+                    <ul class="dash-list mb-0" data-dash-list="reservations">
+                        <li class="dash-list-row" th:each="r : ${stats.reservationsRecentes()}">
+                            <span class="dash-list-icon metric-dot metric-dot--warning" aria-hidden="true"><i class="bi bi-calendar-check-fill"></i></span>
+                            <span class="dash-list-main">
+                                <span class="dash-list-title" th:text="${r.utilisateur()}">Client</span>
+                                <span class="dash-list-sub">
+                                    <span th:text="${r.place()}">A01</span> · <span th:text="${r.vehicule()}">AA-123-BB</span> ·
+                                    <span th:text="${r.arriveeLibelle()}">12 oct., 09:00</span>
+                                </span>
+                            </span>
+                            <span class="badge" th:classappend="${r.statutCss()}" th:text="${r.statutLibelle()}">Confirmée</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" data-dash-empty="reservations" th:if="${#lists.isEmpty(stats.reservationsRecentes())}">
+                        <img src="/img/p2.avif" alt="" width="140" height="140" decoding="async">
+                        <p class="h5 mt-2">Aucune réservation</p>
+                        <p>Les nouvelles réservations apparaîtront ici.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-lg-5" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">
+            <article class="card dash-glow h-100 reveal">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="panel-title">Mouvements récents</h2>
+                            <p class="panel-subtitle">Les cinq dernières entrées enregistrées.</p>
+                        </div>
+                        <a th:href="@{/entrees-sorties}" class="metric-link">Tous les mouvements <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </div>
+
+                    <ul class="dash-list mb-0" data-dash-list="mouvements">
+                        <li class="dash-list-row" th:each="m : ${stats.mouvementsRecents()}">
+                            <span class="dash-list-icon metric-dot" th:classappend="${m.enCours() ? 'metric-dot--info' : 'metric-dot--success'}" aria-hidden="true">
+                                <i class="bi" th:classappend="${m.enCours() ? 'bi-box-arrow-in-right' : 'bi-box-arrow-right'}"></i>
+                            </span>
+                            <span class="dash-list-main">
+                                <span class="dash-list-title" th:text="${m.immatriculation()}">AA-123-BB</span>
+                                <span class="dash-list-sub">
+                                    Place <span th:text="${m.place()}">A01</span> · entrée <span th:text="${m.entreeLibelle()}">12 oct., 08:00</span>
+                                    <th:block th:if="${m.sortieLibelle() != null}"> · sortie <span th:text="${m.sortieLibelle()}">12 oct., 12:00</span></th:block>
+                                </span>
+                            </span>
+                            <span class="badge" th:classappend="${m.enCours() ? 'bg-info' : 'bg-success'}"
+                                  th:text="${m.enCours() ? 'En cours' : (m.montantLibelle() != null ? m.montantLibelle() : 'Payé')}">En cours</span>
+                        </li>
+                    </ul>
+                    <div class="empty-state" data-dash-empty="mouvements" th:if="${#lists.isEmpty(stats.mouvementsRecents())}">
+                        <img src="/img/p2.avif" alt="" width="140" height="140" decoding="async">
+                        <p class="h5 mt-2">Aucun mouvement</p>
+                        <p>Les entrées enregistrées apparaîtront ici.</p>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="col-12" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">
+            <article th:replace="~{::accesRapide}"></article>
+        </div>
+    </section>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script defer th:src="@{/js/dashboard.js}" src="/js/dashboard.js"></script>
 </div>
-</body></html>
+
+<!-- Accès rapide (fragment repris en pleine largeur ou en colonne selon le rôle) -->
+<div th:remove="all">
+<article th:fragment="accesRapide">
+    <article class="card dash-glow h-100 reveal">
+        <div class="card-body">
+            <h2 class="panel-title">Accès rapide</h2>
+            <p class="panel-subtitle mb-3">Les actions les plus fréquentes.</p>
+            <div class="quick-grid">
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties/nouveau}" class="quick-action" data-crud-open data-crud-title="Enregistrer une entrée">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-box-arrow-in-right"></i></span>
+                    <span>
+                        <span class="quick-action-title">Enregistrer une entrée</span>
+                        <span class="quick-action-desc">Véhicule qui arrive au parking</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties?enCours=true}" class="quick-action">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-box-arrow-right"></i></span>
+                    <span>
+                        <span class="quick-action-title">Enregistrer une sortie</span>
+                        <span class="quick-action-desc">Véhicule qui quitte le parking</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places/plan}" class="quick-action">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                    <span>
+                        <span class="quick-action-title">Plan du parking</span>
+                        <span class="quick-action-desc">Visualiser toutes les places</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties}" class="quick-action">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-arrow-left-right"></i></span>
+                    <span>
+                        <span class="quick-action-title">Mouvements</span>
+                        <span class="quick-action-desc">Consulter les entrées et sorties</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}" class="quick-action">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-calendar-check-fill"></i></span>
+                    <span>
+                        <span class="quick-action-title">Réservations</span>
+                        <span class="quick-action-desc">Gérer les réservations</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a th:href="@{/vehicules}" class="quick-action">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-car-front-fill"></i></span>
+                    <span>
+                        <span class="quick-action-title">Véhicules</span>
+                        <span class="quick-action-desc">Parc déclaré au parking</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+                <a sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/abonnements}" class="quick-action">
+                    <span class="metric-tile" aria-hidden="true"><i class="bi bi-card-checklist"></i></span>
+                    <span>
+                        <span class="quick-action-title">Abonnements</span>
+                        <span class="quick-action-desc">Suivre les abonnements</span>
+                    </span>
+                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </article>
+</div>
+</div>
+</body>
+</html>

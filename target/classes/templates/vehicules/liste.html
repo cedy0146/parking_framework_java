@@ -1,31 +1,74 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
 <body>
-<div th:fragment="pageContent">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-car"></i> Véhicules</h2>
-        <a th:href="@{/vehicules/nouveau}" class="btn btn-primary"><i class="fas fa-plus"></i> Nouveau véhicule</a>
-    </div>
-    <div class="card"><div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead><tr><th>ID</th><th>Immatriculation</th><th>Marque</th><th>Modèle</th><th>Type</th><th>Propriétaire</th><th>Actions</th></tr></thead>
-                <tbody>
-                    <tr th:each="v : ${vehicules.content}">
-                        <td th:text="${v.id}"></td><td><strong th:text="${v.immatriculation}"></strong></td><td th:text="${v.marque}"></td>
-                        <td th:text="${v.modele}"></td><td><span class="badge bg-info" th:text="${v.typeVehicule}"></span></td><td th:text="${v.utilisateurNom}"></td>
-                        <td><div class="d-inline-flex gap-3" aria-label="Actions sur le véhicule"><a th:href="@{/vehicules/modifier/{id}(id=${v.id})}" class="link-primary text-decoration-none" aria-label="Modifier" title="Modifier"><i class="bi bi-pencil-square" aria-hidden="true"></i></a><a th:href="@{/vehicules/supprimer/{id}(id=${v.id})}" class="link-danger text-decoration-none" onclick="return confirm('Supprimer ?')" aria-label="Supprimer" title="Supprimer"><i class="bi bi-trash3" aria-hidden="true"></i></a></div></td>
-                    </tr>
-                    <tr th:if="${vehicules.content.isEmpty()}"><td colspan="7" class="text-center text-muted">Aucun véhicule trouvé</td></tr>
-                </tbody>
-            </table>
+<div th:fragment="pageContent" class="page-enter">
+
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Gestion</p>
+            <h1 class="page-title"><span class="hl">Véhicules<svg class="hl-mark" viewBox="0 0 260 70" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="130" cy="35" rx="124" ry="30"></ellipse></svg></span></h1>
+            <p class="page-subtitle">Les véhicules enregistrés et leurs propriétaires.</p>
         </div>
-        <nav th:if="${totalPages > 1}"><ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'"><a class="page-link" th:href="@{/vehicules(page=${currentPage - 1})}">Précédent</a></li>
-            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'"><a class="page-link" th:href="@{/vehicules(page=${i})}" th:text="${i + 1}"></a></li>
-            <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'"><a class="page-link" th:href="@{/vehicules(page=${currentPage + 1})}">Suivant</a></li>
-        </ul></nav>
-    </div></div>
+        <div class="page-actions">
+            <a th:href="@{/vehicules/nouveau}" class="btn btn-primary" data-crud-open data-crud-title="Nouveau véhicule">
+                <i class="bi bi-plus-lg" aria-hidden="true"></i>Nouveau véhicule
+            </a>
+        </div>
+    </header>
+
+    <section class="card" aria-label="Liste des véhicules">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Immatriculation</th>
+                            <th scope="col">Marque</th>
+                            <th scope="col">Modèle</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Propriétaire</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="v : ${vehicules.content}">
+                            <td class="cell-muted" th:text="${v.id}"></td>
+                            <td class="cell-strong" th:text="${v.immatriculation}"></td>
+                            <td th:text="${v.marque}"></td>
+                            <td th:text="${v.modele}"></td>
+                            <td><span class="badge bg-info" th:text="${v.typeVehicule}"></span></td>
+                            <td th:text="${v.utilisateurNom}"></td>
+                            <td class="text-end">
+                                <div class="row-actions" aria-label="Actions sur le véhicule">
+                                    <a th:href="@{/vehicules/modifier/{id}(id=${v.id})}" class="icon-btn" aria-label="Modifier le véhicule" title="Modifier" data-crud-open data-crud-title="Modifier le véhicule">
+                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                    </a>
+                                    <form th:action="@{/vehicules/supprimer/{id}(id=${v.id})}" method="post" class="d-inline" data-crud-confirm="Supprimer définitivement ce véhicule ?">
+                                        <button type="submit" class="icon-btn icon-btn--danger" aria-label="Supprimer le véhicule" title="Supprimer">
+                                            <i class="bi bi-trash3" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${vehicules.content.isEmpty()}">
+                            <td colspan="7" class="table-empty">Aucun véhicule trouvé.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${totalPages > 1}" class="p-3" aria-label="Pagination des véhicules">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'"><a class="page-link" th:href="@{/vehicules(page=${currentPage - 1})}">Précédent</a></li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'"><a class="page-link" th:href="@{/vehicules(page=${i})}" th:text="${i + 1}"></a></li>
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'"><a class="page-link" th:href="@{/vehicules(page=${currentPage + 1})}">Suivant</a></li>
+                </ul>
+            </nav>
+        </div>
+    </section>
+
 </div>
 </body>
 </html>

@@ -1,20 +1,255 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" data-bs-theme="light">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="fr" data-bs-theme="dark">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="color-scheme" content="light dark">
-    <title th:text="${pageTitle != null ? pageTitle + ' - Parking' : 'Parking Management'}">Parking</title>
-    <script>!function(){try{var t=localStorage.getItem('parking-theme')||'auto';document.documentElement.setAttribute('data-bs-theme',t==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t)}catch(e){}}()</script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"><link th:href="@{/css/theme.css}" href="/css/theme.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%234d8dff'/%3E%3Cpath d='M11 24V8h6a5 5 0 0 1 0 10h-6' fill='none' stroke='%2304122e' stroke-width='2.5'/%3E%3C/svg%3E">
+    <title th:text="${pageTitle != null ? pageTitle + ' - ParkFlow' : 'ParkFlow'}">ParkFlow</title>
+    <!-- Thème appliqué AVANT le rendu : le mode sombre est la valeur par défaut -->
+    <script>
+        (function () {
+            var theme = 'dark';
+            try {
+                theme = localStorage.getItem('parkflow-theme') || 'dark';
+            } catch (e) { /* stockage indisponible : mode sombre */ }
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+    <meta name="theme-color" content="#070d1c">
+    <!-- Jeton CSRF lu par /js/crud-modals.js pour tous les fetch() -->
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link th:href="@{/css/theme.css?v=3}" href="/css/theme.css?v=3" rel="stylesheet">
+    <script defer th:src="@{/js/animations.js}" src="/js/animations.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script defer th:src="@{/js/crud-modals.js}" src="/js/crud-modals.js"></script>
+    <script defer th:src="@{/js/theme.js}" src="/js/theme.js"></script>
 </head>
 <body>
-<div class="d-flex min-vh-100">
-    <aside class="app-sidebar d-none d-md-flex flex-column flex-shrink-0 p-3"><a class="app-brand d-flex align-items-center gap-2 mb-4 text-decoration-none" th:href="@{/accueil}"><span class="app-brand-mark d-inline-flex align-items-center justify-content-center rounded-3"><i class="bi bi-p-circle-fill" aria-hidden="true"></i></span><span class="fs-5 fw-semibold">ParkFlow</span></a><nav class="app-nav nav nav-pills flex-column gap-1" aria-label="Navigation principale">
-        <a class="nav-link" th:href="@{/accueil}"><i class="bi bi-grid-1x2-fill me-2" aria-hidden="true"></i>Tableau de bord</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places/plan}"><i class="bi bi-grid-3x3-gap-fill me-2" aria-hidden="true"></i>Plan du parking</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places}"><i class="bi bi-pin-map-fill me-2" aria-hidden="true"></i>Places</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}"><i class="bi bi-calendar-check-fill me-2" aria-hidden="true"></i>Réservations</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties}"><i class="bi bi-arrow-left-right me-2" aria-hidden="true"></i>Entrées / sorties</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/abonnements}"><i class="bi bi-credit-card-2-front-fill me-2" aria-hidden="true"></i>Abonnements</a><a class="nav-link" sec:authorize="hasRole('USER')" th:href="@{/abonnements/mon-abonnement}"><i class="bi bi-credit-card-2-front-fill me-2" aria-hidden="true"></i>Mon abonnement</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/vehicules}"><i class="bi bi-car-front-fill me-2" aria-hidden="true"></i>Véhicules</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/utilisateurs}"><i class="bi bi-people-fill me-2" aria-hidden="true"></i>Utilisateurs</a>
-    </nav><div class="mt-auto pt-3 border-top border-secondary"><a class="app-nav nav-link d-block" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Déconnexion</a></div></aside>
-    <div class="app-main d-flex flex-column flex-grow-1"><header class="app-header sticky-top border-bottom"><nav class="navbar px-3 px-lg-4 py-3" aria-label="Barre d'outils"><button class="btn btn-outline-secondary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavigation" aria-controls="mobileNavigation" aria-label="Ouvrir le menu"><i class="bi bi-list fs-5" aria-hidden="true"></i></button><span class="navbar-text fw-semibold text-body ms-2">Gestion de parking</span><div class="ms-auto dropdown"><button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Changer le thème"><i class="bi bi-circle-half me-1" aria-hidden="true"></i><span data-theme-label>Mode automatique</span></button><ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-label="Choix du thème"><li><button class="dropdown-item" type="button" data-theme-value="light"><i class="bi bi-sun-fill me-2" aria-hidden="true"></i>Mode clair</button></li><li><button class="dropdown-item" type="button" data-theme-value="dark"><i class="bi bi-moon-stars-fill me-2" aria-hidden="true"></i>Mode sombre</button></li><li><button class="dropdown-item" type="button" data-theme-value="auto"><i class="bi bi-circle-half me-2" aria-hidden="true"></i>Automatique</button></li></ul></div></nav></header>
-        <main class="container-fluid p-3 p-lg-4" id="main-content"><div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert"><i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i><span th:text="${success}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button></div><div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert"><i class="bi bi-exclamation-octagon-fill me-2" aria-hidden="true"></i><span th:text="${error}"></span><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button></div><div th:replace="~{:: pageContent}">Contenu</div></main>
+<a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+<!-- En-tête : navigation horizontale en pilule -->
+<header class="app-header">
+    <div class="app-header-inner">
+        <a class="app-brand" th:href="@{/accueil}">
+            <span class="app-brand-mark d-inline-flex align-items-center justify-content-center" aria-hidden="true"><i class="bi bi-p-circle-fill"></i></span>
+            <span>ParkFlow</span>
+        </a>
+
+        <nav class="nav-pill" aria-label="Navigation principale">
+            <a class="nav-pill-link js-nav-link" th:href="@{/accueil}">
+                <i class="bi bi-grid-1x2-fill" aria-hidden="true"></i><span>Tableau de bord</span>
+            </a>
+
+            <div class="nav-pill-drop dropdown" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">
+                <button class="nav-pill-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-grid-3x3-gap-fill" aria-hidden="true"></i><span>Opérations</span>
+                    <i class="bi bi-chevron-down nav-pill-caret" aria-hidden="true"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" th:href="@{/places/plan}"><i class="bi bi-grid-3x3-gap-fill" aria-hidden="true"></i>Plan du parking</a></li>
+                    <li><a class="dropdown-item" th:href="@{/places}"><i class="bi bi-pin-map-fill" aria-hidden="true"></i>Places</a></li>
+                    <li><a class="dropdown-item" th:href="@{/entrees-sorties}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Entrées / sorties</a></li>
+                    <li><a class="dropdown-item" th:href="@{/vehicules}"><i class="bi bi-car-front-fill" aria-hidden="true"></i>Véhicules</a></li>
+                </ul>
+            </div>
+
+            <a class="nav-pill-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}">
+                <i class="bi bi-calendar-check-fill" aria-hidden="true"></i><span>Réservations</span>
+            </a>
+
+            <a class="nav-pill-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/abonnements}">
+                <i class="bi bi-credit-card-2-front-fill" aria-hidden="true"></i><span>Abonnements</span>
+            </a>
+            <a class="nav-pill-link js-nav-link" sec:authorize="hasRole('USER')" th:href="@{/abonnements/mon-abonnement}">
+                <i class="bi bi-credit-card-2-front-fill" aria-hidden="true"></i><span>Mon abonnement</span>
+            </a>
+
+            <div class="nav-pill-drop dropdown" sec:authorize="hasAnyRole('ADMIN','MANAGER')">
+                <button class="nav-pill-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-people-fill" aria-hidden="true"></i><span>Administration</span>
+                    <i class="bi bi-chevron-down nav-pill-caret" aria-hidden="true"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" th:href="@{/utilisateurs}"><i class="bi bi-people-fill" aria-hidden="true"></i>Utilisateurs</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="app-header-tools">
+            <button type="button" class="theme-toggle" data-theme-toggle
+                    aria-label="Changer de thème" title="Mode clair" aria-pressed="true">
+                <i class="bi bi-moon-stars-fill" data-theme-icon="light" aria-hidden="true"></i>
+                <i class="bi bi-sun-fill" data-theme-icon="dark" aria-hidden="true" hidden></i>
+            </button>
+            <span class="app-user-avatar" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+            <span class="app-user-meta" sec:authorize="isAuthenticated()">
+                <span class="app-user-name" sec:authentication="name">Utilisateur</span>
+                <span class="app-user-role">
+                    <span sec:authorize="hasRole('ADMIN')">Administrateur</span>
+                    <span sec:authorize="hasRole('MANAGER')">Manager</span>
+                    <span sec:authorize="hasRole('OPERATOR')">Opérateur</span>
+                    <span sec:authorize="hasRole('USER')">Client</span>
+                </span>
+            </span>
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="btn btn-outline-secondary btn-sm" aria-label="Déconnexion" title="Déconnexion">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                </button>
+            </form>
+            <button class="app-menu-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNavigation" aria-controls="mobileNavigation" aria-label="Ouvrir le menu">
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main id="main-content">
+    <!-- Messages de redirection : repris par crud-modals.js en toast SweetAlert2 -->
+    <div th:if="${success}" id="flash-success" class="alert alert-success alert-dismissible fade show" role="status">
+        <i class="bi bi-check-circle-fill me-2" aria-hidden="true"></i><span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    <div th:if="${error}" id="flash-error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-octagon-fill me-2" aria-hidden="true"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+    <div th:replace="~{:: pageContent}">Contenu</div>
+</main>
+
+<!-- Navigation mobile -->
+<div class="offcanvas offcanvas-end app-drawer" tabindex="-1" id="mobileNavigation" aria-labelledby="mobileNavigationLabel">
+    <div class="offcanvas-header">
+        <h2 class="offcanvas-title d-flex align-items-center gap-2 mb-0" id="mobileNavigationLabel">
+            <span class="app-brand-mark d-inline-flex align-items-center justify-content-center" aria-hidden="true"><i class="bi bi-p-circle-fill"></i></span>
+            <span>ParkFlow</span>
+        </h2>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+        <nav class="drawer-nav" aria-label="Navigation mobile">
+            <p class="nav-group-label">Principal</p>
+            <a class="drawer-link js-nav-link" th:href="@{/accueil}"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i>Tableau de bord</a>
+
+            <p class="nav-group-label" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')">Opérations</p>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places/plan}"><i class="bi bi-grid-3x3-gap-fill" aria-hidden="true"></i>Plan du parking</a>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places}"><i class="bi bi-pin-map-fill" aria-hidden="true"></i>Places</a>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Entrées / sorties</a>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/vehicules}"><i class="bi bi-car-front-fill" aria-hidden="true"></i>Véhicules</a>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}"><i class="bi bi-calendar-check-fill" aria-hidden="true"></i>Réservations</a>
+
+            <p class="nav-group-label" sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')">Abonnements</p>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/abonnements}"><i class="bi bi-credit-card-2-front-fill" aria-hidden="true"></i>Abonnements</a>
+            <a class="drawer-link js-nav-link" sec:authorize="hasRole('USER')" th:href="@{/abonnements/mon-abonnement}"><i class="bi bi-credit-card-2-front-fill" aria-hidden="true"></i>Mon abonnement</a>
+
+            <p class="nav-group-label" sec:authorize="hasAnyRole('ADMIN','MANAGER')">Administration</p>
+            <a class="drawer-link js-nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/utilisateurs}"><i class="bi bi-people-fill" aria-hidden="true"></i>Utilisateurs</a>
+        </nav>
+        <div class="app-drawer-footer">
+            <form th:action="@{/logout}" method="post" class="logout-form">
+                <button type="submit" class="drawer-link w-100">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i>Déconnexion
+                </button>
+            </form>
+        </div>
     </div>
 </div>
-<div class="offcanvas offcanvas-start app-sidebar text-white d-md-none" tabindex="-1" id="mobileNavigation" aria-labelledby="mobileNavigationLabel"><div class="offcanvas-header"><h2 class="offcanvas-title fs-5 app-brand" id="mobileNavigationLabel"><i class="bi bi-p-circle-fill me-2" aria-hidden="true"></i>ParkFlow</h2><button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fermer"></button></div><div class="offcanvas-body d-flex flex-column pt-0"><nav class="app-nav nav nav-pills flex-column gap-1" aria-label="Navigation mobile"><a class="nav-link" th:href="@{/accueil}">Tableau de bord</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places/plan}">Plan du parking</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/places}">Places</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','USER')" th:href="@{/reservations}">Réservations</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/entrees-sorties}">Entrées / sorties</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/abonnements}">Abonnements</a><a class="nav-link" sec:authorize="hasRole('USER')" th:href="@{/abonnements/mon-abonnement}">Mon abonnement</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER','OPERATOR')" th:href="@{/vehicules}">Véhicules</a><a class="nav-link" sec:authorize="hasAnyRole('ADMIN','MANAGER')" th:href="@{/utilisateurs}">Utilisateurs</a></nav><a class="app-nav nav-link mt-auto" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Déconnexion</a></div></div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script th:src="@{/js/theme.js}" src="/js/theme.js"></script>
-</body></html>
+
+<!-- Modale unique des opérations CRUD (formulaires et confirmations) -->
+<div class="modal fade" id="crudModal" tabindex="-1" aria-labelledby="crudModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="crudModalLabel">Formulaire</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body" id="crudModalBody">
+                <div class="crud-loader text-center py-4" id="crudLoader" hidden>
+                    <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+                    <span class="visually-hidden">Chargement en cours…</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    /* État actif de la navigation : correspondance exacte d'abord, puis le
+       préfixe le plus long ; un menu déroulant est actif si l'un de ses
+       liens l'est. Le tiroir mobile partage la même logique. */
+    (function () {
+        var path = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
+        var links = Array.prototype.slice.call(document.querySelectorAll('.js-nav-link[href], .nav-pill .dropdown-item[href]'));
+        var best = null;
+        links.forEach(function (link) {
+            var href = (link.getAttribute('href') || '').replace(/\/+$/, '') || '/';
+            if (href === '/' || path === href || path.indexOf(href + '/') === 0) {
+                if (!best || href.length > best.length) best = href;
+            }
+        });
+        if (!best) return;
+        links.forEach(function (link) {
+            var href = (link.getAttribute('href') || '').replace(/\/+$/, '') || '/';
+            var active = href === best;
+            link.classList.toggle('active', active);
+            if (active) link.setAttribute('aria-current', 'page');
+            else link.removeAttribute('aria-current');
+        });
+        /* Déroulants : le parent est actif si l'un de ses enfants l'est */
+        Array.prototype.forEach.call(document.querySelectorAll('.nav-pill-drop'), function (drop) {
+            if (drop.querySelector('.dropdown-item.active')) {
+                var trigger = drop.querySelector('.dropdown-toggle');
+                if (trigger) trigger.classList.add('active');
+            }
+        });
+    })();
+
+    /* Curseur glissant dans la barre de navigation (≥1200px). */
+    (function () {
+        var pill = document.querySelector('.nav-pill');
+        if (!pill) return;
+        var indicator = document.createElement('span');
+        indicator.className = 'nav-pill-indicator is-hidden';
+        indicator.setAttribute('aria-hidden', 'true');
+        pill.appendChild(indicator);
+
+        function place(el) {
+            if (!el || el.offsetParent === null) {
+                indicator.classList.add('is-hidden');
+                return;
+            }
+            var pr = pill.getBoundingClientRect();
+            var r = el.getBoundingClientRect();
+            indicator.style.width = r.width + 'px';
+            indicator.style.transform = 'translateX(' + (r.left - pr.left) + 'px)';
+            indicator.classList.remove('is-hidden');
+        }
+
+        function activeLink() {
+            return pill.querySelector('.nav-pill-link.active, .nav-pill-drop .dropdown-toggle.active');
+        }
+
+        function sync() { place(activeLink()); }
+        window.addEventListener('load', sync);
+        window.addEventListener('resize', sync);
+        sync();
+    })();
+
+    /* Titre de l'onglet dérivé du titre de la page. */
+    (function () {
+        if (document.title !== 'ParkFlow') return;
+        var heading = document.querySelector('#main-content .page-title, #main-content h1, #main-content h2');
+        if (heading && heading.textContent.trim()) {
+            document.title = heading.textContent.trim() + ' · ParkFlow';
+        }
+    })();
+</script>
+</body>
+</html>

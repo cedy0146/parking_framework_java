@@ -1,16 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
 <body>
-<div th:fragment="pageContent">
-    <h2 class="mb-4"><i class="fas fa-sign-in-alt"></i> Enregistrer une entrée</h2>
-    <div class="card"><div class="card-body">
-        <form th:action="@{/entrees-sorties/enregistrer-entree}" th:object="${entreeSortie}" method="post" class="row g-3">
-            <div class="col-md-6"><label class="form-label">Véhicule *</label><select class="form-select" th:field="*{vehiculeId}" th:classappend="${#fields.hasErrors('vehiculeId')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="v : ${vehicules}" th:value="${v.id}" th:text="${v.immatriculation + ' - ' + v.marque}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('vehiculeId')}" th:errors="*{vehiculeId}"></div></div>
-            <div class="col-md-6"><label class="form-label">Date/heure entrée *</label><input type="datetime-local" class="form-control" th:field="*{dateHeureEntree}" th:classappend="${#fields.hasErrors('dateHeureEntree')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('dateHeureEntree')}" th:errors="*{dateHeureEntree}"></div></div>
-            <div class="col-12"><div class="alert alert-info"><i class="fas fa-info-circle"></i> Place attribuée automatiquement selon le type d'utilisateur.</div></div>
-            <div class="col-12"><button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Enregistrer</button> <a th:href="@{/entrees-sorties}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
-        </form>
-    </div></div>
+<div th:fragment="pageContent" class="page-enter">
+
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Entrées / Sorties</p>
+            <h1 class="page-title">Enregistrer une entrée</h1>
+            <p class="page-subtitle">Indiquez le véhicule et l'heure d'entrée dans le parking.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/entrees-sorties}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour à la liste
+            </a>
+        </div>
+    </header>
+
+    <section class="card">
+        <div class="card-body">
+            <form th:fragment="formContent" th:action="@{/entrees-sorties/enregistrer-entree}" th:object="${entreeSortie}" method="post" class="row g-3">
+                <div class="col-12 alert alert-danger form-error-summary" role="alert" th:if="${#fields.hasAnyErrors()}">
+                    <strong>Veuillez corriger les champs signalés ci-dessous.</strong>
+                    <ul>
+                        <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="vehiculeId">Véhicule *</label>
+                    <select class="form-select" id="vehiculeId" th:field="*{vehiculeId}" th:classappend="${#fields.hasErrors('vehiculeId')} ? 'is-invalid'">
+                        <option value="">-- Sélectionner --</option>
+                        <option th:each="v : ${vehicules}" th:value="${v.id}" th:text="${v.immatriculation + ' - ' + v.marque}"></option>
+                    </select>
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('vehiculeId')}" th:errors="*{vehiculeId}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="dateHeureEntree">Date/heure entrée *</label>
+                    <input type="datetime-local" class="form-control" id="dateHeureEntree" th:field="*{dateHeureEntree}" th:classappend="${#fields.hasErrors('dateHeureEntree')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('dateHeureEntree')}" th:errors="*{dateHeureEntree}"></div>
+                </div>
+                <div class="col-12">
+                    <div class="alert alert-info mb-0" role="note">
+                        <i class="bi bi-info-circle me-2" aria-hidden="true"></i>Place attribuée automatiquement selon le type d'utilisateur.
+                    </div>
+                </div>
+                <div class="col-12 form-actions">
+                    <button type="submit" class="btn btn-success"><i class="bi bi-floppy" aria-hidden="true"></i>Enregistrer</button>
+                    <a th:href="@{/entrees-sorties}" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Annuler</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
 </div>
 </body>
 </html>

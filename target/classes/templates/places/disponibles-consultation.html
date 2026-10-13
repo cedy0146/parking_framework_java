@@ -1,32 +1,44 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
-<head><style>
-    .place-cell { width: 90px; height: 90px; border-radius: 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; margin: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .libre { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; }
-</style></head>
 <body>
-<div th:fragment="pageContent">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-check-circle"></i> Places disponibles</h2>
-        <a th:href="@{/reservations/nouveau}" class="btn btn-primary"><i class="fas fa-calendar-plus"></i> Réserver une place</a>
+<div th:fragment="pageContent" class="page-enter">
+
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Consultation</p>
+            <h1 class="page-title">Places disponibles</h1>
+            <p class="page-subtitle">Les places actuellement libres, prêtes à être réservées.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/reservations/nouveau}" class="btn btn-primary" data-crud-open data-crud-title="Nouvelle réservation">
+                <i class="bi bi-calendar-plus" aria-hidden="true"></i>Réserver une place
+            </a>
+            <img class="page-illustration d-none d-md-block"
+                 th:src="@{/img/p2.avif}" src="/img/p2.avif"
+                 width="740" height="285" loading="lazy"
+                 alt="" aria-hidden="true">
+        </div>
+    </header>
+
+    <div th:if="${#lists.isEmpty(placesDisponibles)}" class="alert alert-warning" role="status">
+        <i class="bi bi-exclamation-triangle me-2" aria-hidden="true"></i>Aucune place disponible pour le moment.
     </div>
 
-    <div th:if="${#lists.isEmpty(placesDisponibles)}" class="alert alert-warning">
-        <i class="fas fa-exclamation-triangle"></i> Aucune place disponible pour le moment.
-    </div>
-
-    <div>
-        <div th:each="place : ${placesDisponibles}" class="place-cell libre">
-            <span th:text="${place.numero}"></span>
-            <small th:text="${place.type}"></small>
+    <div class="parking-grid mb-4" aria-label="Places disponibles">
+        <div th:each="place : ${placesDisponibles}" class="parking-slot parking-slot--libre">
+            <span class="slot-head">
+                <span class="slot-number" th:text="${place.numero}">A01</span>
+                <i class="bi bi-check-circle-fill slot-icon" aria-hidden="true"></i>
+            </span>
+            <span class="slot-zone" th:text="${place.type}">STANDARD</span>
+            <span class="badge bg-success mt-auto">Libre</span>
         </div>
     </div>
 
-    <div class="mt-4">
-        <a th:href="@{/abonnements/mon-abonnement}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
-    </div>
+    <a th:href="@{/abonnements/mon-abonnement}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour
+    </a>
+
 </div>
 </body>
 </html>

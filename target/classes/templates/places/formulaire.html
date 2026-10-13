@@ -1,16 +1,56 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
 <body>
-<div th:fragment="pageContent">
-    <h2 class="mb-4"><i class="fas fa-map-marker-alt"></i> <span th:text="${id != null ? 'Modifier la place' : 'Nouvelle place'}"></span></h2>
-    <div class="card"><div class="card-body">
-        <form th:action="${id != null} ? @{/places/modifier/{id}(id=${id})} : @{/places/sauvegarder}" th:object="${place}" method="post" class="row g-3">
-            <div class="col-md-4"><label class="form-label">Numéro *</label><input type="text" class="form-control" th:field="*{numero}" th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></div></div>
-            <div class="col-md-4"><label class="form-label">Zone *</label><input type="text" class="form-control" th:field="*{zone}" th:classappend="${#fields.hasErrors('zone')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('zone')}" th:errors="*{zone}"></div></div>
-            <div class="col-md-4"><label class="form-label">Type *</label><select class="form-select" th:field="*{type}" th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="t : ${typesPlace}" th:value="${t}" th:text="${t}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div></div>
-            <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button> <a th:href="@{/places}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
-        </form>
-    </div></div>
+<div th:fragment="pageContent" class="page-enter">
+
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Gestion des places</p>
+            <h1 class="page-title"><span th:text="${id != null ? 'Modifier la place' : 'Nouvelle place'}"></span></h1>
+            <p class="page-subtitle">Renseignez le numéro, la zone et le type de la place.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/places}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour à la liste
+            </a>
+        </div>
+    </header>
+
+    <section class="card">
+        <div class="card-body">
+            <form th:fragment="formContent" th:action="${id != null} ? @{/places/modifier/{id}(id=${id})} : @{/places/sauvegarder}" th:object="${place}" method="post" class="row g-3">
+                <div class="col-12 alert alert-danger form-error-summary" role="alert" th:if="${#fields.hasAnyErrors()}">
+                    <strong>Veuillez corriger les champs signalés ci-dessous.</strong>
+                    <ul>
+                        <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="numero">Numéro *</label>
+                    <input type="text" class="form-control" id="numero" th:field="*{numero}" placeholder="A01" th:classappend="${#fields.hasErrors('numero')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('numero')}" th:errors="*{numero}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="zone">Zone *</label>
+                    <input type="text" class="form-control" id="zone" th:field="*{zone}" placeholder="A" th:classappend="${#fields.hasErrors('zone')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('zone')}" th:errors="*{zone}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="type">Type *</label>
+                    <select class="form-select" id="type" th:field="*{type}" th:classappend="${#fields.hasErrors('type')} ? 'is-invalid'">
+                        <option value="">-- Sélectionner --</option>
+                        <option th:each="t : ${typesPlace}" th:value="${t}" th:text="${t}"></option>
+                    </select>
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('type')}" th:errors="*{type}"></div>
+                </div>
+                <div class="col-12 form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy" aria-hidden="true"></i>Enregistrer</button>
+                    <a th:href="@{/places}" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Annuler</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
 </div>
 </body>
 </html>

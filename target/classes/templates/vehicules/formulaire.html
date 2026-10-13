@@ -1,18 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout :: html}">
 <body>
-<div th:fragment="pageContent">
-    <h2 class="mb-4"><i class="fas fa-car"></i> <span th:text="${id != null ? 'Modifier le véhicule' : 'Nouveau véhicule'}"></span></h2>
-    <div class="card"><div class="card-body">
-        <form th:action="${id != null} ? @{/vehicules/modifier/{id}(id=${id})} : @{/vehicules/sauvegarder}" th:object="${vehicule}" method="post" class="row g-3">
-            <div class="col-md-6"><label class="form-label">Immatriculation *</label><input type="text" class="form-control" th:field="*{immatriculation}" th:classappend="${#fields.hasErrors('immatriculation')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('immatriculation')}" th:errors="*{immatriculation}"></div></div>
-            <div class="col-md-6"><label class="form-label">Propriétaire *</label><select class="form-select" th:field="*{utilisateurId}" th:classappend="${#fields.hasErrors('utilisateurId')} ? 'is-invalid'"><option value="">-- Sélectionner --</option><option th:each="u : ${utilisateurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom}"></option></select><div class="invalid-feedback" th:if="${#fields.hasErrors('utilisateurId')}" th:errors="*{utilisateurId}"></div></div>
-            <div class="col-md-4"><label class="form-label">Marque *</label><input type="text" class="form-control" th:field="*{marque}" th:classappend="${#fields.hasErrors('marque')} ? 'is-invalid'"><div class="invalid-feedback" th:if="${#fields.hasErrors('marque')}" th:errors="*{marque}"></div></div>
-            <div class="col-md-4"><label class="form-label">Modèle</label><input type="text" class="form-control" th:field="*{modele}"></div>
-            <div class="col-md-4"><label class="form-label">Type</label><input type="text" class="form-control" th:field="*{typeVehicule}" placeholder="VOITURE, MOTO..."></div>
-            <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Enregistrer</button> <a th:href="@{/vehicules}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a></div>
-        </form>
-    </div></div>
+<div th:fragment="pageContent" class="page-enter">
+
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Gestion des véhicules</p>
+            <h1 class="page-title"><span th:text="${id != null ? 'Modifier le véhicule' : 'Nouveau véhicule'}"></span></h1>
+            <p class="page-subtitle">Immatriculation, propriétaire et caractéristiques du véhicule.</p>
+        </div>
+        <div class="page-actions">
+            <a th:href="@{/vehicules}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>Retour à la liste
+            </a>
+        </div>
+    </header>
+
+    <section class="card">
+        <div class="card-body">
+            <form th:fragment="formContent" th:action="${id != null} ? @{/vehicules/modifier/{id}(id=${id})} : @{/vehicules/sauvegarder}" th:object="${vehicule}" method="post" class="row g-3">
+                <div class="col-12 alert alert-danger form-error-summary" role="alert" th:if="${#fields.hasAnyErrors()}">
+                    <strong>Veuillez corriger les champs signalés ci-dessous.</strong>
+                    <ul>
+                        <li th:each="err : ${#fields.allErrors()}" th:text="${err}"></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="immatriculation">Immatriculation *</label>
+                    <input type="text" class="form-control" id="immatriculation" th:field="*{immatriculation}" placeholder="AA-123-BB" th:classappend="${#fields.hasErrors('immatriculation')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('immatriculation')}" th:errors="*{immatriculation}"></div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="utilisateurId">Propriétaire *</label>
+                    <select class="form-select" id="utilisateurId" th:field="*{utilisateurId}" th:classappend="${#fields.hasErrors('utilisateurId')} ? 'is-invalid'">
+                        <option value="">-- Sélectionner --</option>
+                        <option th:each="u : ${utilisateurs}" th:value="${u.id}" th:text="${u.prenom + ' ' + u.nom}"></option>
+                    </select>
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('utilisateurId')}" th:errors="*{utilisateurId}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="marque">Marque *</label>
+                    <input type="text" class="form-control" id="marque" th:field="*{marque}" placeholder="Renault" th:classappend="${#fields.hasErrors('marque')} ? 'is-invalid'">
+                    <div class="invalid-feedback" role="alert" th:if="${#fields.hasErrors('marque')}" th:errors="*{marque}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="modele">Modèle</label>
+                    <input type="text" class="form-control" id="modele" th:field="*{modele}" placeholder="Clio">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="typeVehicule">Type</label>
+                    <input type="text" class="form-control" id="typeVehicule" th:field="*{typeVehicule}" placeholder="VOITURE, MOTO...">
+                </div>
+                <div class="col-12 form-actions">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-floppy" aria-hidden="true"></i>Enregistrer</button>
+                    <a th:href="@{/vehicules}" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Annuler</a>
+                </div>
+            </form>
+        </div>
+    </section>
+
 </div>
 </body>
 </html>

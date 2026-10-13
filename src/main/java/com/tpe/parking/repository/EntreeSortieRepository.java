@@ -46,4 +46,20 @@ public interface EntreeSortieRepository extends JpaRepository<EntreeSortie, Long
                                    Pageable pageable);
 
     long countByDateHeureSortieIsNull();
+
+    long countByDateHeureEntreeAfter(LocalDateTime debut);
+
+    long countByDateHeureSortieAfter(LocalDateTime debut);
+
+    List<EntreeSortie> findByDateHeureEntreeGreaterThanEqual(LocalDateTime debut);
+
+    List<EntreeSortie> findByDateHeureSortieGreaterThanEqual(LocalDateTime debut);
+
+    /** Véhicules encore sur place (mouvements ouverts) — mini-plan, listes. */
+    List<EntreeSortie> findByDateHeureSortieIsNull();
+
+    /** Nombre de véhicules en stationnement à un instant donné (variation « vs veille »). */
+    @Query("SELECT COUNT(e) FROM EntreeSortie e WHERE e.dateHeureEntree <= :moment " +
+           "AND (e.dateHeureSortie IS NULL OR e.dateHeureSortie > :moment)")
+    long compterEnStationnementA(@Param("moment") LocalDateTime moment);
 }

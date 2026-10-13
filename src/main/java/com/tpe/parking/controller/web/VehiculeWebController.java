@@ -1,15 +1,17 @@
 package com.tpe.parking.controller.web;
 
 import com.tpe.parking.dto.request.VehiculeRequestDTO;
-import com.tpe.parking.dto.response.UtilisateurResponseDTO;
 import com.tpe.parking.dto.response.VehiculeResponseDTO;
 import com.tpe.parking.service.UtilisateurService;
 import com.tpe.parking.service.VehiculeService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -52,31 +54,51 @@ public class VehiculeWebController {
     }
 
     @GetMapping("/nouveau")
-    public String formulaireAjout(Model model) {
+    public String formulaireAjout(Model model, HttpServletRequest request) {
         model.addAttribute("vehicule", new VehiculeRequestDTO());
         model.addAttribute("utilisateurs", utilisateurService.trouverTous(null, null, PageRequest.of(0, 100)).getContent());
-        return "vehicules/formulaire";
+        return CrudAjax.estAjax(request) ? "vehicules/formulaire :: formContent" : "vehicules/formulaire";
     }
 
     @PostMapping("/sauvegarder")
-    public String sauvegarder(
+    public Object sauvegarder(
             @Valid @ModelAttribute("vehicule") VehiculeRequestDTO dto,
             BindingResult result,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        boolean ajax = CrudAjax.estAjax(request);
 
         if (result.hasErrors()) {
             model.addAttribute("utilisateurs", utilisateurService.trouverTous(null, null, PageRequest.of(0, 100)).getContent());
+            if (ajax) {
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+                return "vehicules/formulaire :: formContent";
+            }
             return "vehicules/formulaire";
         }
 
-        service.ajouter(dto);
+        try {
+            service.ajouter(dto);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/vehicules/nouveau";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Véhicule ajouté avec succès");
+        }
         redirectAttributes.addFlashAttribute("success", "Véhicule ajouté avec succès");
         return "redirect:/vehicules";
     }
 
     @GetMapping("/modifier/{id}")
-    public String formulaireModification(@PathVariable Long id, Model model) {
+    public String formulaireModification(@PathVariable Long id, Model model, HttpServletRequest request) {
         VehiculeResponseDTO vehicule = service.recupererParId(id);
         VehiculeRequestDTO dto = new VehiculeRequestDTO();
         dto.setImmatriculation(vehicule.getImmatriculation());
@@ -89,31 +111,65 @@ public class VehiculeWebController {
         model.addAttribute("vehicule", dto);
         model.addAttribute("id", id);
         model.addAttribute("utilisateurs", utilisateurService.trouverTous(null, null, PageRequest.of(0, 100)).getContent());
-        return "vehicules/formulaire";
+        return CrudAjax.estAjax(request) ? "vehicules/formulaire :: formContent" : "vehicules/formulaire";
     }
 
     @PostMapping("/modifier/{id}")
-    public String modifier(
+    public Object modifier(
             @PathVariable Long id,
             @Valid @ModelAttribute("vehicule") VehiculeRequestDTO dto,
             BindingResult result,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        boolean ajax = CrudAjax.estAjax(request);
 
         if (result.hasErrors()) {
             model.addAttribute("id", id);
             model.addAttribute("utilisateurs", utilisateurService.trouverTous(null, null, PageRequest.of(0, 100)).getContent());
+            if (ajax) {
+                response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+                return "vehicules/formulaire :: formContent";
+            }
             return "vehicules/formulaire";
         }
 
-        service.modifier(id, dto);
+        try {
+            service.modifier(id, dto);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/vehicules";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Véhicule modifié avec succès");
+        }
         redirectAttributes.addFlashAttribute("success", "Véhicule modifié avec succès");
         return "redirect:/vehicules";
     }
 
-    @GetMapping("/supprimer/{id}")
-    public String supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        service.supprimer(id);
+    @PostMapping("/supprimer/{id}")
+    public Object supprimer(@PathVariable Long id, RedirectAttributes redirectAttributes,
+                            HttpServletRequest request) {
+        boolean ajax = CrudAjax.estAjax(request);
+        try {
+            service.supprimer(id);
+        } catch (Exception e) {
+            if (ajax) {
+                return CrudAjax.erreur(e);
+            }
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/vehicules";
+        }
+
+        if (ajax) {
+            return CrudAjax.succes("Véhicule supprimé avec succès");
+        }
         redirectAttributes.addFlashAttribute("success", "Véhicule supprimé avec succès");
         return "redirect:/vehicules";
     }
