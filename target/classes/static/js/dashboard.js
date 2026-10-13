@@ -996,6 +996,7 @@
     /* ---------- réaction à la bascule de thème ---------- */
 
     document.addEventListener('parkflow:themechange', recolorerGraphiques);
+    document.addEventListener('parkflow:accentchange', recolorerGraphiques);
 
     if (typeof MutationObserver === 'function') {
         var observateur = new MutationObserver(function (mutations) {

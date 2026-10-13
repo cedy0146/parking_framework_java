@@ -18,23 +18,22 @@
 :root {
   color-scheme: dark;
 
-  /* Surfaces — noir profond, teinte bleutée minimale */
-  --parking-bg: #02060f;
-  --parking-band: #04091a;
-  --parking-surface: #071024;
-  --parking-surface-2: #0b1834;
-  --parking-surface-3: #0f2044;
+  /* Surfaces */
+  --parking-bg: #070d1c;
+  --parking-band: #0b1327;
+  --parking-surface: #0d1630;
+  --parking-surface-2: #121d3d;
   /* En-tête translucide */
-  --parking-topbar-bg: rgba(2, 6, 15, 0.92);
+  --parking-topbar-bg: rgba(7, 13, 28, 0.82);
 
   /* Texte — contraste vérifié :
-     #f0f4ff → 17:1 sur --parking-surface, 18:1 sur --parking-bg
-     #94a5c8 → 7:1 sur --parking-surface, 7.4:1 sur --parking-bg (AA ≥ 4.5:1) */
-  --parking-text: #f0f4ff;
-  --parking-muted: #94a5c8;
-  --parking-border: rgba(148, 170, 255, 0.16);
-  --parking-border-strong: rgba(148, 170, 255, 0.32);
-  --parking-placeholder: #7e8db2;
+     #eef3ff → 16,7:1 sur --parking-surface, 17,6:1 sur --parking-bg
+     #93a3c4 → 6,9:1 sur --parking-surface, 7,2:1 sur --parking-bg (AA ≥ 4,5:1) */
+  --parking-text: #eef3ff;
+  --parking-muted: #93a3c4;
+  --parking-border: rgba(148, 170, 255, 0.14);
+  --parking-border-strong: rgba(148, 170, 255, 0.28);
+  --parking-placeholder: #7d8cb0;
 
   /* Mouvement */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -72,7 +71,7 @@
   --parking-success: var(--status-free);
   --parking-success-soft: var(--status-free-soft);
   --parking-success-border: var(--status-free-border);
-  --parking-success-hover: #7dd3fc;
+  --parking-success-hover: #86efac;
   --parking-danger: var(--status-busy);
   --parking-danger-soft: var(--status-busy-soft);
   --parking-danger-border: var(--status-busy-border);
@@ -103,12 +102,11 @@
   /* Texte posé sur une image / un dégradé (toujours clair) */
   --parking-on-image: #ffffff;
   /* Voile appliqué sur les photos */
-  --parking-scrim-rgb: 2, 6, 15;
+  --parking-scrim-rgb: 7, 13, 28;
 
-  /* Ombres — double couche pour profondeur naturelle en sombre */
-  --parking-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
-  --parking-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
-  --parking-shadow-lg: 0 20px 60px -12px rgba(0, 0, 0, 0.65), 0 4px 16px rgba(0, 0, 0, 0.45);
+  /* Ombres */
+  --parking-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --parking-shadow: 0 18px 44px -20px rgba(0, 0, 0, 0.8);
 
   /* Rythme — pilule 999px, cartes 18px, champs/menus 14px */
   --parking-radius-pill: 999px;
@@ -145,9 +143,9 @@
   --bs-info: var(--parking-info);
   --bs-info-rgb: 147, 197, 253;
   --bs-light: var(--parking-surface-2);
-  --bs-light-rgb: 11, 24, 52;
+  --bs-light-rgb: 18, 29, 61;
   --bs-dark: var(--parking-bg);
-  --bs-dark-rgb: 2, 6, 15;
+  --bs-dark-rgb: 7, 13, 28;
   --bs-white: #ffffff;
 
   --bs-link-color: var(--parking-accent);
@@ -185,24 +183,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Halo bleu décoratif, haut à droite + halo doux en bas à gauche */
+/* Halo bleu décoratif, haut à droite */
 body::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background:
-    radial-gradient(
-      46rem 32rem at 88% -8%,
-      rgba(var(--parking-accent-rgb), 0.14),
-      transparent 62%
-    ),
-    radial-gradient(
-      32rem 24rem at 5% 108%,
-      rgba(var(--parking-accent-rgb), 0.06),
-      transparent 60%
-    );
+  background: radial-gradient(
+    46rem 32rem at 88% -8%,
+    rgba(var(--parking-accent-rgb), 0.15),
+    transparent 62%
+  );
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -657,17 +649,10 @@ a {
    8. Cartes & panneaux — rayon 18px
    -------------------------------------------------------------------------- */
 .card {
-  background: linear-gradient(
-    135deg,
-    var(--parking-surface) 0%,
-    var(--parking-surface-2) 100%
-  );
+  background-color: var(--parking-surface);
   border: 1px solid var(--parking-border);
   border-radius: var(--parking-radius);
   box-shadow: var(--parking-shadow-sm);
-  transition: transform var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
 }
 
 .card-header,
@@ -989,12 +974,69 @@ a {
   font-weight: 600;
 }
 
-/* --- Outils (thème, utilisateur, déconnexion, menu mobile) --- */
+/* --- Outils (thème, couleur, utilisateur, déconnexion, menu mobile) --- */
 .app-header-tools {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+/* --- Sélecteur de couleur d'accent --- */
+.accent-picker-wrap {
+  position: relative;
+}
+
+.accent-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1050;
+  background-color: var(--parking-surface);
+  border: 1px solid var(--parking-border-strong);
+  border-radius: var(--parking-radius-sm);
+  box-shadow: var(--parking-shadow);
+  padding: 0.75rem;
+  min-width: 11rem;
+}
+
+.accent-popup[hidden] {
+  display: none;
+}
+
+.accent-popup-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--parking-muted);
+  margin: 0 0 0.5rem;
+}
+
+.accent-swatches {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+}
+
+.accent-swatch {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-color: var(--sw);
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.accent-swatch:hover {
+  transform: scale(1.15);
+}
+
+.accent-swatch.is-active {
+  border-color: var(--parking-text);
+  box-shadow: 0 0 0 2px var(--parking-surface), 0 0 0 4px var(--sw);
 }
 
 .app-user-avatar {
@@ -1243,11 +1285,6 @@ a {
 .metric-card {
   border: 1px solid var(--parking-border);
   box-shadow: var(--parking-shadow-sm);
-  background: linear-gradient(
-    160deg,
-    var(--parking-surface) 0%,
-    var(--parking-surface-2) 100%
-  );
 }
 
 .metric-label {
@@ -2266,14 +2303,12 @@ a {
 /* --- e) Cartes : élévation au survol + chevron des accès rapides --- */
 .card {
   transition: transform var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--parking-shadow-lg);
-  border-color: var(--parking-accent-border);
+  box-shadow: var(--parking-shadow);
 }
 
 .quick-action {
@@ -3118,7 +3153,7 @@ html.theme-anim .card {
   .dash-glow:hover {
     transform: translateY(-3px);
     border-color: var(--parking-accent-border);
-    box-shadow: var(--parking-shadow-lg);
+    box-shadow: var(--parking-shadow);
   }
 
   .dash-glow:hover::after {
